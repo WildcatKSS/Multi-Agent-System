@@ -21,10 +21,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"mas {__version__}",
     )
-    subparsers = parser.add_subparsers(dest="command")
+    subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser(
         "run",
         help="Placeholder entrypoint; prints a notice and exits.",
+        description="Placeholder entrypoint; prints a notice and exits.",
     )
     return parser
 
@@ -35,7 +36,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "run":
         print(_PLACEHOLDER_MESSAGE)
-        return 0
-
-    parser.print_help()
     return 0

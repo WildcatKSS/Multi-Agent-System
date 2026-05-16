@@ -20,7 +20,17 @@ def test_run_subcommand_prints_placeholder(
     assert "MVP not implemented yet" in capsys.readouterr().out
 
 
-def test_no_args_prints_help(capsys: pytest.CaptureFixture[str]) -> None:
-    exit_code = main([])
-    assert exit_code == 0
-    assert "usage:" in capsys.readouterr().out.lower()
+def test_run_subcommand_help_lists_description(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(["run", "--help"])
+    assert excinfo.value.code == 0
+    assert "Placeholder entrypoint" in capsys.readouterr().out
+
+
+def test_no_args_exits_with_usage_error(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main([])
+    assert excinfo.value.code == 2
+    assert "required" in capsys.readouterr().err.lower()
