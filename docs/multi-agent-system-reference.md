@@ -1,168 +1,169 @@
 # Multi Agent System — Reference Architecture
 
 ## Status
-Architectuurvoorstel voor een generiek multi-agent systeem met MVP- en researchfasen.
+
+Architecture proposal for a generic multi-agent system with MVP and research phases.
 
 ---
 
-# Doel
+# Purpose
 
-Dit document beschrijft een generieke architectuur voor een autonoom multi-agent systeem.
+This document describes a generic architecture for an autonomous multi-agent system.
 
-Het systeem moet:
+The system must:
 
-- zelfstandig taken analyseren
-- dynamisch plannen maken
-- tools selecteren
-- fouten detecteren en herstellen
-- output evalueren
-- leren van eerdere uitvoeringen
-- schaalbaar kunnen samenwerken via meerdere workers
+* independently analyze tasks
+* dynamically generate plans
+* select tools
+* detect and recover from errors
+* evaluate output
+* learn from previous executions
+* scale collaboration across multiple workers
 
-De architectuur is bewust generiek opgezet en niet gekoppeld aan één specifieke use-case.
-
----
-
-# Kernprincipes
-
-1. Eerst stabiliteit, daarna intelligentie
-2. Eerst observability, daarna optimalisatie
-3. Geen verborgen orchestration
-4. Geen impliciete state-mutaties
-5. Kleine iteratieve uitbreidingen boven grote refactors
-6. Elke agent moet uitlegbaar blijven
-7. Evaluatie bepaalt kwaliteit
-8. Distributed systems pas toevoegen wanneer single-worker stabiel is
+The architecture is intentionally designed to be generic and not tied to a specific use case.
 
 ---
 
-# Managementsamenvatting
+# Core Principles
 
-De architectuur bestaat uit meerdere gespecialiseerde agenten die samenwerken via expliciete workflowstaten en beleidsregels.
-
-Het systeem is opgesplitst in twee trajecten:
-
-## MVP-traject (week 1–8)
-
-Doel:
-bewijzen dat autonome workflow-uitvoering stabiel werkt binnen een eenvoudige runtime.
-
-## Research-traject (week 9–14)
-
-Doel:
-onderzoeken hoe schaalbaarheid, distributed orchestration en adaptief leren toegevoegd kunnen worden.
-
-Complexe onderdelen zoals reward modeling, fine-tuning en volledige distributed governance worden bewust uitgesteld totdat de basis stabiel werkt.
+1. Stability before intelligence
+2. Observability before optimization
+3. No hidden orchestration
+4. No implicit state mutations
+5. Small iterative extensions over large refactors
+6. Every agent must remain explainable
+7. Evaluation determines quality
+8. Distributed systems are only introduced once the single-worker setup is stable
 
 ---
 
-# Architectuurlagen
+# Executive Summary
 
-## Laag 1 — Planning
+The architecture consists of multiple specialized agents collaborating through explicit workflow states and policy rules.
 
-### Verantwoordelijkheid
+The system is divided into two tracks:
 
-- taakanalyse
-- strategie bepalen
-- plan genereren
-- subproblemen opdelen
-- recursieve planning
+## MVP Track (Week 1–8)
 
-### Mogelijke technologieën
+Goal:
+prove that autonomous workflow execution operates reliably within a simple runtime.
 
-- LangGraph
-- ReAct loops
-- State machines
+## Research Track (Week 9–14)
+
+Goal:
+explore how scalability, distributed orchestration, and adaptive learning can be added.
+
+Complex components such as reward modeling, fine-tuning, and full distributed governance are intentionally postponed until the foundation is stable.
+
+---
+
+# Architecture Layers
+
+## Layer 1 — Planning
+
+### Responsibilities
+
+* task analysis
+* strategy selection
+* plan generation
+* decomposition of subproblems
+* recursive planning
+
+### Possible Technologies
+
+* LangGraph
+* ReAct loops
+* State machines
 
 ### MVP
 
-Eenvoudige lineaire planning.
+Simple linear planning.
 
 ### Research
 
-Recursieve planning en capability-aware planning.
+Recursive planning and capability-aware planning.
 
 ---
 
-## Laag 2 — Toolselectie
+## Layer 2 — Tool Selection
 
-### Verantwoordelijkheid
+### Responsibilities
 
-- relevante tools selecteren
-- context bepalen
-- juiste data ophalen
-- geschikte LLM-routes kiezen
+* selecting relevant tools
+* determining context
+* retrieving the correct data
+* selecting appropriate LLM routes
 
-### Voorbeelden
+### Examples
 
-- API calls
-- retrieval
-- document parsing
-- semantic search
-- code execution
-- structured generation
+* API calls
+* retrieval
+* document parsing
+* semantic search
+* code execution
+* structured generation
 
-### Ontwerpprincipe
+### Design Principle
 
-Geen hardcoded toolflows.
-
----
-
-## Laag 3 — Zelfherstel
-
-### Verantwoordelijkheid
-
-- fouten detecteren
-- retries uitvoeren
-- alternatieve strategieën proberen
-- escaleren indien nodig
-
-### Mogelijke fouten
-
-- timeout
-- parsing failure
-- invalid response
-- hallucination
-- dependency failure
-
-### Retry-beleid
-
-- maximaal 3 retries
-- daarna escalatie
+No hardcoded tool flows.
 
 ---
 
-## Laag 4 — Evaluatie
+## Layer 3 — Self-Recovery
 
-### Verantwoordelijkheid
+### Responsibilities
 
-Beoordelen van outputkwaliteit.
+* detecting failures
+* executing retries
+* attempting alternative strategies
+* escalating when necessary
 
-### Evaluatiecomponenten
+### Possible Failures
 
-1. Deterministische regels
-2. Heuristische regels
-3. LLM-judgement
+* timeout
+* parsing failure
+* invalid response
+* hallucination
+* dependency failure
 
-### Voorbeelden van criteria
+### Retry Policy
 
-- volledigheid
-- consistentie
-- structuur
-- correctheid
-- taakafhandeling
+* maximum of 3 retries
+* escalation afterward
 
-### Minimale score
+---
+
+## Layer 4 — Evaluation
+
+### Responsibilities
+
+Assessing output quality.
+
+### Evaluation Components
+
+1. Deterministic rules
+2. Heuristic rules
+3. LLM judgment
+
+### Example Criteria
+
+* completeness
+* consistency
+* structure
+* correctness
+* task completion
+
+### Minimum Score
 
 8.0/10
 
-### Belangrijke observatie
+### Important Observation
 
-De evaluator is feitelijk een policy engine.
+The evaluator effectively functions as a policy engine.
 
 ---
 
-## Laag 5 — Runtime
+## Layer 5 — Runtime
 
 ### MVP
 
@@ -170,112 +171,112 @@ Single-worker runtime.
 
 ### Research
 
-Distributed runtime met:
+Distributed runtime with:
 
-- parallelle workers
-- eventbus
-- merge-logica
-- deterministic execution
+* parallel workers
+* event bus
+* merge logic
+* deterministic execution
 
-### Ontwerpprincipe
+### Design Principle
 
-Uitvoering, coördinatie en merging blijven expliciet gescheiden.
+Execution, coordination, and merging remain explicitly separated.
 
 ---
 
-## Laag 6 — Geheugenarchitectuur
+## Layer 6 — Memory Architecture
 
 ### Working Memory
 
-- tijdelijke taakstatus
-- single writer
-- korte TTL
+* temporary task state
+* single writer
+* short TTL
 
 ### Episodic Memory
 
-- uitvoeringsgeschiedenis
-- append-only
+* execution history
+* append-only
 
 ### Semantic Memory
 
-- patronen
-- strategieën
-- herbruikbare kennis
+* patterns
+* strategies
+* reusable knowledge
 
 ### Event Log
 
-- immutable events
-- auditability
-- replay capability
+* immutable events
+* auditability
+* replay capability
 
 ---
 
 # Workflow Lifecycle
 
-## Toegestane toestanden
+## Allowed States
 
-1. GEMAAKT
-2. IN_WACHTRIJ
-3. LOPEND
-4. WACHTEN_OP_RETRY
-5. GEBLOKKEERD
-6. MISLUKT
-7. VOLTOOID
-8. GEANNULEERD
+1. CREATED
+2. QUEUED
+3. RUNNING
+4. WAITING_FOR_RETRY
+5. BLOCKED
+6. FAILED
+7. COMPLETED
+8. CANCELLED
 
-## Kernregel
+## Core Rule
 
-Workflowstaten mogen uitsluitend aangepast worden via de beleidslaag.
+Workflow states may only be modified through the policy layer.
 
-Doelen:
+Goals:
 
-- voorkomen van race conditions
-- voorkomen van zombie tasks
-- betere debugging
-- betere replay
-- betere observability
+* preventing race conditions
+* preventing zombie tasks
+* improving debugging
+* improving replayability
+* improving observability
 
 ---
 
 # MVP Scope
 
-## In scope
+## In Scope
 
-- planning-agent
-- toolselectie-agent
-- zelfherstel-agent
-- evaluatie-agent
-- single-worker runtime
-- Redis + episodic memory
-- basis guardrails
+* planning agent
+* tool selection agent
+* self-recovery agent
+* evaluation agent
+* single-worker runtime
+* Redis + episodic memory
+* basic guardrails
 
-## Niet in scope
+## Out of Scope
 
-- distributed runtime
-- event sourcing
-- reward modeling
-- fine-tuning
-- productie-security
-- multi-worker orchestration
+* distributed runtime
+* event sourcing
+* reward modeling
+* fine-tuning
+* production security
+* multi-worker orchestration
 
 ---
 
 # Research Scope
 
-## Toevoegingen
+## Additions
 
-- distributed orchestration
-- adaptive learning
-- event sourcing
-- observability
-- causality tracking
-- policy engines
+* distributed orchestration
+* adaptive learning
+* event sourcing
+* observability
+* causality tracking
+* policy engines
 
-## Experimenteel
+## Experimental
 
-- reward modeling
-- fine-tuning
-- mode collapse detection
+* reward modeling
+* fine-tuning
+* mode collapse detection
 
 ---
 
@@ -285,84 +286,84 @@ Doelen:
 
 ### MVP
 
-Ongestructureerde LLM-output.
+Unstructured LLM output.
 
-### Toekomst
+### Future
 
-Migratie naar:
+Migration toward:
 
-- JSON schema
-- TypedDict
-- formele plancontracten
+* JSON schema
+* TypedDict
+* formal plan contracts
 
 ---
 
 ## Memory Governance
 
-Nog expliciete keuzes nodig voor:
+Explicit decisions are still required for:
 
-- retention
-- ownership
-- consistency
-- poisoning defense
+* retention
+* ownership
+* consistency
+* poisoning defense
 
 ---
 
 ## Evaluator Versioning
 
-Benodigd:
+Required:
 
-- evaluator versions
-- audit trails
-- score breakdowns
-- reproduceerbaarheid
+* evaluator versions
+* audit trails
+* score breakdowns
+* reproducibility
 
 ---
 
 ## Security
 
-Bewust buiten MVP-scope.
+Intentionally outside MVP scope.
 
-Later nodig:
+Later required:
 
-- capability tokens
-- sandboxing
-- prompt injection defense
-- audit logging
-- network isolation
+* capability tokens
+* sandboxing
+* prompt injection defense
+* audit logging
+* network isolation
 
 ---
 
-# Technologische Richting
+# Technology Direction
 
 ## Core
 
-- Python
-- LangGraph
-- Pydantic
-- FastAPI
+* Python
+* LangGraph
+* Pydantic
+* FastAPI
 
 ## Memory
 
-- Redis
-- PostgreSQL
-- Vector database
+* Redis
+* PostgreSQL
+* Vector database
 
 ## Observability
 
-- OpenTelemetry
-- structured logging
-- tracing
+* OpenTelemetry
+* structured logging
+* tracing
 
 ## Runtime
 
-- Celery
-- Temporal
-- Ray
+* Celery
+* Temporal
+* Ray
 
 ---
 
-# Aanbevolen Repositorystructuur
+# Recommended Repository Structure
 
 ```text
 repo/
@@ -380,65 +381,65 @@ repo/
 
 ---
 
-# README-richtlijnen
+# README Guidelines
 
-README moet expliciet uitleggen:
+The README should explicitly explain:
 
-- wat het systeem doet
-- wat MVP betekent
-- wat niet gebouwd mag worden
-- architectuurprincipes
-- coding conventions
-- PR-richtlijnen
-- observability-vereisten
-
----
-
-# Implementatiestrategie
-
-## Fase 1
-
-- workflow engine
-- planning
-- toolselectie
-- logging
-
-## Fase 2
-
-- zelfherstel
-- evaluator
-- retry-beleid
-
-## Fase 3
-
-- memory layer
-- semantic retrieval
-- episodic storage
-
-## Fase 4
-
-- guardrails
-- budgetbeheer
-- TTL policies
-
-## Fase 5
-
-- distributed runtime
-- learning loops
-- event sourcing
-- orchestration
+* what the system does
+* what the MVP means
+* what must not be built
+* architectural principles
+* coding conventions
+* PR guidelines
+* observability requirements
 
 ---
 
-# Samenvatting
+# Implementation Strategy
 
-Deze architectuur beschrijft een gefaseerde aanpak voor een autonoom multi-agent systeem.
+## Phase 1
 
-Het MVP focust bewust op:
+* workflow engine
+* planning
+* tool selection
+* logging
 
-- eenvoud
-- stabiliteit
-- observability
-- reproduceerbaarheid
+## Phase 2
 
-Complexiteit zoals distributed orchestration en adaptief leren wordt pas toegevoegd nadat de basis aantoonbaar stabiel werkt.
+* self-recovery
+* evaluator
+* retry policy
+
+## Phase 3
+
+* memory layer
+* semantic retrieval
+* episodic storage
+
+## Phase 4
+
+* guardrails
+* budget management
+* TTL policies
+
+## Phase 5
+
+* distributed runtime
+* learning loops
+* event sourcing
+* orchestration
+
+---
+
+# Summary
+
+This architecture describes a phased approach for an autonomous multi-agent system.
+
+The MVP intentionally focuses on:
+
+* simplicity
+* stability
+* observability
+* reproducibility
+
+Complexity such as distributed orchestration and adaptive learning is only introduced after the foundation has demonstrably proven stable. 

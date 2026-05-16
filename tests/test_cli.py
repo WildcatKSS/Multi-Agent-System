@@ -1,7 +1,7 @@
 import pytest
 
 from mas import __version__
-from mas.cli import PLACEHOLDER_MESSAGE, main
+from mas.cli import main
 
 
 def test_version_flag_prints_version(capsys: pytest.CaptureFixture[str]) -> None:
@@ -17,7 +17,7 @@ def test_run_subcommand_prints_placeholder(
 ) -> None:
     exit_code = main(["run"])
     assert exit_code == 0
-    assert PLACEHOLDER_MESSAGE in capsys.readouterr().out
+    assert "MVP not implemented yet" in capsys.readouterr().out
 
 
 def test_no_args_prints_help(capsys: pytest.CaptureFixture[str]) -> None:

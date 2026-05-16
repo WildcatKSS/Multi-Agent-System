@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 from mas import __version__
 
-PLACEHOLDER_MESSAGE = (
+_PLACEHOLDER_MESSAGE = (
     "mas: MVP not implemented yet. "
     "See docs/roadmap.md for the milestone breakdown."
 )
@@ -34,7 +34,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
-        print(PLACEHOLDER_MESSAGE)
+        print(_PLACEHOLDER_MESSAGE)
         return 0
 
     parser.print_help()
