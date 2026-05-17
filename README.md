@@ -1,5 +1,9 @@
 # Multi-Agent-System
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)](pyproject.toml)
+[![Project Status: Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+
 A generic, autonomous multi-agent system that independently analyzes tasks,
 generates plans, selects tools, recovers from errors, evaluates output, and
 learns from previous executions. The architecture is intentionally generic
