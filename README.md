@@ -83,12 +83,21 @@ This means:
 
 ## Local Run
 
-Install the package in editable mode with the dev extras, then run the test
-suite and the CLI placeholder:
+Create a virtual environment, install the package in editable mode with dev
+extras, then run the test suite and the CLI placeholder:
 
 ```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install package with dev dependencies
 pip install -e ".[dev]"
+
+# Run tests
 pytest -v
+
+# Try the CLI
 python -m mas --version
 python -m mas run
 mas --version
@@ -97,6 +106,8 @@ mas --version
 Expected output of `python -m mas run` at this stage is a placeholder
 notice — runtime behavior arrives in later milestones (see
 [`docs/roadmap.md`](docs/roadmap.md)).
+
+To exit the virtual environment later, run `deactivate`.
 
 ## Roadmap
 
