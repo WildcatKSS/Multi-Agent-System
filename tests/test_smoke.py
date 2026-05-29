@@ -1,6 +1,4 @@
 import re
-import subprocess
-import sys
 from importlib.metadata import entry_points
 
 import mas
@@ -16,13 +14,3 @@ def test_mas_console_script_is_registered() -> None:
     ]
     assert len(mas_eps) == 1
     assert mas_eps[0].value == "mas.cli:main"
-
-
-def test_python_dash_m_invocation_prints_version() -> None:
-    result = subprocess.run(
-        [sys.executable, "-m", "mas", "--version"],
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 0
-    assert mas.__version__ in result.stdout

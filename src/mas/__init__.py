@@ -1,10 +1,7 @@
 """Multi-Agent System (mas) — MVP scaffold."""
 
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import version
 
-try:
-    __version__ = version("mas")
-except PackageNotFoundError:
-    __version__ = "0.0.0+unknown"
+__version__ = version("mas")
 
 __all__ = ["__version__"]

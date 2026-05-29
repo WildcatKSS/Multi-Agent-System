@@ -55,12 +55,27 @@ The following are deliberately **out of scope** for the MVP:
 Full discussion in
 [`docs/multi-agent-system-reference.md`](docs/multi-agent-system-reference.md).
 
+## Design
+
+**Library-first architecture**: `mas` is designed as a reusable library with an optional CLI wrapper.
+Agent implementations (planner, tool selection, evaluator, etc.) live in `src/mas/` and are intended
+for direct import and use. The CLI (`mas run`, etc.) is a convenience layer on top of the library.
+
+This means:
+- Domain logic has no dependencies on CLI infrastructure
+- Code can be imported as `from mas.agents import Planner` without CLI
+- Future users can build their own CLI/orchestration on top of `mas`
+
 ## Repository Layout
 
 ```
 .
 ├── docs/                            # roadmap + reference architecture
-├── src/mas/                         # Python package (MVP scaffold)
+├── src/mas/                         # Python library (agents, runtime, memory)
+│   ├── agents/                      # Agent implementations (future)
+│   ├── runtime/                     # Single-worker orchestration (future)
+│   ├── memory/                      # Redis + episodic memory (future)
+│   └── cli.py                       # CLI wrapper (optional, for convenience)
 ├── tests/                           # pytest suite
 ├── pyproject.toml                   # build config + dependencies
 └── README.md

@@ -16,3 +16,19 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+# Local development — Redis / databases
+redis-data/
+*.sqlite
+*.db
+local.env
+
+# Observability — telemetry / spans / metrics
+traces/
+metrics/
+*.otel
+*.jaeger
+
+# Temporary
+*.tmp
+.env.local
