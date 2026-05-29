@@ -26,7 +26,7 @@ def test_run_subcommand_help_lists_description(
     with pytest.raises(SystemExit) as excinfo:
         main(["run", "--help"])
     assert excinfo.value.code == 0
-    assert "Placeholder entrypoint" in capsys.readouterr().out
+    assert "MVP not implemented yet" in capsys.readouterr().out
 
 
 def test_no_args_exits_with_usage_error(capsys: pytest.CaptureFixture[str]) -> None:
