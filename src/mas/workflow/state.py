@@ -27,7 +27,7 @@ class WorkflowState(Enum):
 
     def is_terminal(self) -> bool:
         """Check if this is a terminal state."""
-        return self in self.terminal_states()
+        return self in {WorkflowState.FAILED, WorkflowState.COMPLETED, WorkflowState.CANCELLED}
 
 
 # State transition rules: which states can transition to which

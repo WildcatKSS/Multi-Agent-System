@@ -66,7 +66,13 @@ class WorkflowStateMachine:
 
 
 class PolicyEngine:
-    """Global policy enforcement for workflow execution."""
+    """Global policy enforcement for workflow execution.
+
+    Manages state machines for multiple workflows and enforces transition rules.
+    Maintains immutable audit log of all state changes.
+
+    NOTE: Single-threaded only. Add locking if used in async/multi-worker contexts.
+    """
 
     def __init__(self):
         """Initialize policy engine."""
@@ -111,7 +117,7 @@ class PolicyEngine:
             self._global_events.append(
                 StateTransitionEvent(
                     timestamp=datetime.now(),
-                    from_state=machine.events[-2].to_state if len(machine.events) > 1 else machine.state,
+                    from_state=machine.events[-1].from_state,
                     to_state=new_state,
                     reason=reason,
                     metadata={**(metadata or {}), "workflow_id": workflow_id},
