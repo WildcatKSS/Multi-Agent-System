@@ -12,12 +12,14 @@ def test_version_flag_prints_version(capsys: pytest.CaptureFixture[str]) -> None
     assert __version__ in captured.out
 
 
-def test_run_subcommand_prints_placeholder(
+def test_run_subcommand_executes_demo_plan(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     exit_code = main(["run"])
     assert exit_code == 0
-    assert "MVP not implemented yet" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "final state: completed" in out
+    assert "completed: True" in out
 
 
 def test_run_subcommand_help_lists_description(
@@ -26,7 +28,7 @@ def test_run_subcommand_help_lists_description(
     with pytest.raises(SystemExit) as excinfo:
         main(["run", "--help"])
     assert excinfo.value.code == 0
-    assert "MVP not implemented yet" in capsys.readouterr().out
+    assert "runtime" in capsys.readouterr().out.lower()
 
 
 def test_no_args_exits_with_usage_error(capsys: pytest.CaptureFixture[str]) -> None:
