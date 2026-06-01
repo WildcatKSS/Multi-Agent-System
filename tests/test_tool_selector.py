@@ -143,3 +143,13 @@ class TestToolSelector:
 
         with pytest.raises(ValueError, match="no steps"):
             selector.select_tools(plan)
+
+    def test_selection_is_immutable(self) -> None:
+        """ToolSelection objects are frozen and cannot be mutated."""
+        selection = ToolSelection(
+            step_id="step-01",
+            tool_name="test_tool",
+        )
+
+        with pytest.raises(AttributeError):
+            selection.tool_name = "modified"  # type: ignore

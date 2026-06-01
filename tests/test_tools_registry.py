@@ -71,12 +71,10 @@ class TestToolRegistry:
         names = registry.list_names()
         assert set(names) == {"search", "parse"}
 
-    def test_empty_action_rejected(self) -> None:
-        """Cannot register tool with empty name."""
-        registry = ToolRegistry()
-
+    def test_empty_name_rejected_by_tool(self) -> None:
+        """Cannot create tool with empty name."""
         with pytest.raises(ValueError, match="name cannot be empty"):
-            registry.register(Tool(name="", description="Tool"), _dummy_handler)
+            Tool(name="", description="Tool")
 
     def test_duplicate_registration_rejected(self) -> None:
         """Cannot register same tool twice."""
@@ -86,3 +84,10 @@ class TestToolRegistry:
         registry.register(tool, _dummy_handler)
         with pytest.raises(ValueError, match="already registered"):
             registry.register(tool, _dummy_handler)
+
+    def test_tool_is_immutable(self) -> None:
+        """Tool objects are frozen and cannot be mutated."""
+        tool = Tool(name="search", description="Search tool")
+
+        with pytest.raises(AttributeError):
+            tool.name = "modified"  # type: ignore

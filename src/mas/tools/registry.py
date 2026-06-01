@@ -8,9 +8,14 @@ from mas.tools.contract import Tool
 
 @dataclass
 class RegisteredTool:
-    """A tool registered in the registry."""
+    """A tool and its handler registered in the registry.
+
+    Internal type used to pair a Tool contract with its implementation callable.
+    """
 
     tool: Tool
+    """The tool definition and metadata."""
+
     handler: Callable[..., Any]
     """The function or callable that implements this tool."""
 
@@ -29,17 +34,17 @@ class ToolRegistry:
         """Register a tool with its handler.
 
         Args:
-            tool: Tool definition with metadata
+            tool: Tool definition with metadata (validated on creation)
             handler: Callable that implements the tool.
                      Expected signature: handler(step_inputs: dict) -> dict
 
         Raises:
-            ValueError: If tool name is empty or already registered
+            ValueError: If tool is already registered
         """
-        if not tool.name:
-            raise ValueError("tool name cannot be empty")
         if tool.name in self._tools:
-            raise ValueError(f"Tool {tool.name} is already registered")
+            raise ValueError(
+                f"Tool '{tool.name}' is already registered in this registry"
+            )
 
         self._tools[tool.name] = RegisteredTool(tool=tool, handler=handler)
 

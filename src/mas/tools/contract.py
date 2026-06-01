@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(frozen=True)
 class Tool:
     """Definition of an available tool."""
 
@@ -25,14 +25,14 @@ class Tool:
     def __post_init__(self) -> None:
         """Validate tool on creation."""
         if not self.name:
-            raise ValueError("Tool name cannot be empty")
+            raise ValueError("name cannot be empty")
         if not self.description:
-            raise ValueError("Tool description cannot be empty")
+            raise ValueError("description cannot be empty")
         if self.cost_estimate < 0:
             raise ValueError("cost_estimate cannot be negative")
 
 
-@dataclass
+@dataclass(frozen=True)
 class ToolSelection:
     """Selection of a tool for a plan step."""
 
