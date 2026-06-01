@@ -10,7 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class RedisWorkingMemory(WorkingMemoryStore):
-    """Fast, session-scoped working memory backed by Redis."""
+    """Fast, session-scoped working memory backed by Redis.
+
+    Values are JSON-serialized for storage. Only JSON-serializable types are
+    supported: dict, list, str, int, float, bool, None. Non-serializable
+    objects (datetime, custom classes, etc.) must be converted before storage.
+    """
 
     def __init__(self, redis_client: Any | None = None) -> None:
         """Initialize Redis working memory.

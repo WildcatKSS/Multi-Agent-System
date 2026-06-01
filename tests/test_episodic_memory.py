@@ -116,3 +116,20 @@ class TestEpisodicMemoryStore:
         for ns in namespaces:
             key = MemoryKey(namespace=ns, key="entry-001")
             assert key.full_key() in store._entries
+
+    @pytest.mark.asyncio
+    async def test_warns_on_large_storage(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Warns when episodic memory grows beyond threshold."""
+        import logging
+
+        caplog.set_level(logging.WARNING)
+        store = EpisodicMemoryStoreImpl()
+
+        # Fill store with entries above threshold
+        for i in range(EpisodicMemoryStoreImpl._MAX_ENTRIES_THRESHOLD + 1):
+            key = MemoryKey(namespace="test", key=f"entry-{i:05d}")
+            entry = MemoryEntry(key=key, value={"index": i})
+            await store.record(entry)
+
+        # Should have logged warning about memory growth
+        assert any("memory growing large" in record.message for record in caplog.records)

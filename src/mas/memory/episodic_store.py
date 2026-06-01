@@ -19,7 +19,11 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
     - retrieve_by_namespace: O(n) scans all entries (acceptable for MVP)
     - No pagination support (future enhancement)
     - Memory grows unbounded; use clear_expired() or TTL to manage size
+    - Warning logged when entries exceed max_size threshold (10k entries)
     """
+
+    # Warning threshold for unbounded growth (10,000 entries)
+    _MAX_ENTRIES_THRESHOLD = 10_000
 
     def __init__(self) -> None:
         """Initialize episodic memory store."""
@@ -37,6 +41,14 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
             timestamp = datetime.now(timezone.utc).replace(tzinfo=None)
 
             self._entries[full_key] = (entry, timestamp)
+
+            # Warn if approaching memory limit
+            if len(self._entries) > self._MAX_ENTRIES_THRESHOLD:
+                logger.warning(
+                    f"Episodic memory growing large: {len(self._entries)} entries. "
+                    f"Consider calling clear_expired() or upgrading to persistent backend.",
+                    extra={"count": len(self._entries)},
+                )
 
             logger.debug(
                 f"Recorded to episodic memory: {full_key}",
