@@ -15,18 +15,18 @@ for the full reference architecture.
 
 **Implementation in progress** — Milestone A ✅ complete, Milestone B 🚧 in progress.
 
-**Completed (8 PRs):**
+**Completed (9 PRs):**
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
 - PR-04: Single-Worker Runtime Orchestrator (Baseline)
 - PR-05: Planner Agent v1
 - PR-06: Tool Selection Agent v1 + Tool Registry
+- PR-07: Input Adapters v1 (Email/Calendar/Document/Transcript)
 - PR-08: Self-Healing Agent v1 (Retry/Fallback/Escalation)
 - PR-09: Evaluator Agent v1 (Rules + Heuristics + Threshold)
 
 **In Progress:**
-- PR-07: Input Adapters
 - PR-10: Memory Layer v1
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
