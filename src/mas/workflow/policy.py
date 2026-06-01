@@ -114,15 +114,10 @@ class PolicyEngine:
             return False
 
         if machine.transition(new_state, reason, metadata):
-            self._global_events.append(
-                StateTransitionEvent(
-                    timestamp=datetime.now(),
-                    from_state=machine.events[-1].from_state,
-                    to_state=new_state,
-                    reason=reason,
-                    metadata={**(metadata or {}), "workflow_id": workflow_id},
-                )
-            )
+            event = machine.events[-1]
+            # Add workflow_id to metadata and append to global log
+            event.metadata["workflow_id"] = workflow_id
+            self._global_events.append(event)
             return True
 
         return False
