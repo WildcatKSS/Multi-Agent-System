@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)](pyproject.toml)
-[![Project Status: Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+[![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 A generic, autonomous multi-agent system that independently analyzes tasks,
 generates plans, selects tools, recovers from errors, evaluates output, and
@@ -13,10 +13,23 @@ for the full reference architecture.
 
 ## Status
 
-Early MVP scaffold. This repository currently contains only the project
-skeleton; agent logic, runtime orchestration, and memory integrations are
-not yet implemented. The work is sliced into milestones tracked in
-[`docs/roadmap.md`](docs/roadmap.md).
+**Implementation in progress** — Milestone A ✅ complete, Milestone B 🚧 in progress.
+
+**Completed (8 PRs):**
+- PR-01: Project Bootstrap & Repository Foundations
+- PR-02: Workflow State Machine & Policy Layer
+- PR-03: Core Domain Contracts
+- PR-04: Single-Worker Runtime Orchestrator (Baseline)
+- PR-05: Planner Agent v1
+- PR-06: Tool Selection Agent v1 + Tool Registry
+- PR-08: Self-Healing Agent v1 (Retry/Fallback/Escalation)
+- PR-09: Evaluator Agent v1 (Rules + Heuristics + Threshold)
+
+**In Progress:**
+- PR-07: Input Adapters
+- PR-10: Memory Layer v1
+
+The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## MVP Scope
 
