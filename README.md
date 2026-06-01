@@ -13,9 +13,14 @@ for the full reference architecture.
 
 ## Status
 
-**Implementation in progress** — Milestone A ✅ complete, Milestone B ✅ complete, Milestone C 🚧 in progress.
+### Milestones
 
-**Completed (9 PRs):**
+- **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
+- **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
+- **Milestone C — Reliability & Operations:** 🚧 In Progress (0/3 PRs)
+- **Milestone D — Validation & Documentation:** ⏳ Todo (0/2 PRs)
+
+### Completed (9 PRs):
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
