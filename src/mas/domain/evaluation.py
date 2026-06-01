@@ -1,7 +1,9 @@
 """Evaluation contract: assessment of task execution."""
 
+import uuid
 from dataclasses import dataclass, field
 from enum import Enum
+from statistics import mean
 
 
 class EvaluationCriteria(Enum):
@@ -71,9 +73,6 @@ class Evaluation:
         Returns:
             Evaluation with computed overall score
         """
-        import uuid
-        from statistics import mean
-
         overall_score = mean(criteria_scores.values()) if criteria_scores else 0.0
 
         return cls(

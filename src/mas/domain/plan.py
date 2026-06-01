@@ -21,6 +21,11 @@ class Step:
 
     Steps represent atomic units of work that can be executed.
     Each step can depend on other steps completing first.
+
+    Retry semantics:
+    - max_retries: maximum number of retry attempts (0 = no retries, 3 = up to 3 retries)
+    - retry_count: current number of retry attempts already performed
+    - Total attempts possible: 1 (initial) + max_retries (retries)
     """
 
     id: str
@@ -46,11 +51,19 @@ class Step:
         return self.status == StepStatus.READY
 
     def has_failed(self) -> bool:
-        """Check if this step has exhausted retries."""
+        """Check if this step has permanently failed (status=FAILED and retries exhausted).
+
+        Returns True only when the step has failed AND there are no more retries available.
+        This indicates the step cannot be recovered through retry attempts.
+        """
         return self.status == StepStatus.FAILED and self.retry_count >= self.max_retries
 
     def can_retry(self) -> bool:
-        """Check if this step can be retried."""
+        """Check if this step can be retried.
+
+        Returns True if the step failed but still has retry attempts available.
+        Once this returns False, the step is permanently failed.
+        """
         return self.status == StepStatus.FAILED and self.retry_count < self.max_retries
 
 
@@ -87,6 +100,37 @@ class Plan:
             for dep in step.depends_on:
                 if dep not in step_ids:
                     raise ValueError(f"Step {step.id} depends on unknown step {dep}")
+
+        # Detect circular dependencies using DFS
+        self._validate_no_circular_dependencies()
+
+    def _validate_no_circular_dependencies(self) -> None:
+        """Detect circular dependencies in the step graph using DFS."""
+        # Build adjacency list for dependency graph
+        graph: dict[str, list[str]] = {step.id: step.depends_on for step in self.steps}
+
+        visited: set[str] = set()
+        rec_stack: set[str] = set()
+
+        def has_cycle(node: str) -> bool:
+            visited.add(node)
+            rec_stack.add(node)
+
+            for neighbor in graph.get(node, []):
+                if neighbor not in visited:
+                    if has_cycle(neighbor):
+                        return True
+                elif neighbor in rec_stack:
+                    return True
+
+            rec_stack.remove(node)
+            return False
+
+        # Check each node for cycles
+        for step in self.steps:
+            if step.id not in visited:
+                if has_cycle(step.id):
+                    raise ValueError(f"Circular dependency detected in plan {self.id}")
 
     def get_steps_by_status(self, status: StepStatus) -> list[Step]:
         """Get all steps with a specific status."""
