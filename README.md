@@ -102,6 +102,24 @@ This means:
 
 ## Installation
 
+### Automated Installation (Recommended)
+
+For a one-command setup that handles everything:
+
+```bash
+./install.sh              # Install with dev dependencies
+./install.sh --with-redis # Install with Redis for production memory layer
+```
+
+This script will:
+- Check for Python 3.12+
+- Create a virtual environment
+- Install all dependencies
+- Run verification tests
+- Optionally start Redis server
+
+### Manual Installation
+
 See [`INSTALL.md`](INSTALL.md) for comprehensive setup instructions, including:
 - System requirements for Ubuntu, macOS, and other Linux distributions
 - Python virtual environment setup
@@ -129,11 +147,45 @@ python -m mas --version
 python -m mas run
 ```
 
-Expected output of `python -m mas run` at this stage is a placeholder
-notice — runtime behavior arrives in later milestones (see
+To exit the virtual environment later, run `deactivate`.
+
+## Running the System
+
+### Start the Agent System
+
+Once installed and with the virtual environment activated:
+
+```bash
+# Run the agent system
+mas run
+
+# Run specific agent (when implemented in future milestones)
+mas run --agent planner
+
+# Run with debug logging
+mas run --debug
+```
+
+At this stage of development, `mas run` displays a placeholder message.
+Full agent orchestration is implemented in later milestones (see
 [`docs/roadmap.md`](docs/roadmap.md)).
 
-To exit the virtual environment later, run `deactivate`.
+### Development Commands
+
+```bash
+# Run test suite
+pytest -v                    # All tests with verbose output
+pytest tests/test_agents.py  # Specific test file
+pytest -k "test_plan"        # Tests matching pattern
+pytest --cov=src/mas tests/  # With coverage report
+
+# Check code quality
+mypy src/mas/                # Type checking (when tools added)
+
+# Run CLI
+mas --version                # Show version
+mas --help                   # Show available commands
+```
 
 ## Roadmap
 
