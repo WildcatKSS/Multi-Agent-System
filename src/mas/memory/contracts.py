@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Mapping
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,7 @@ class MemoryEntry:
     ttl_seconds: int = 3600
     """Time-to-live in seconds (default 1 hour)."""
 
-    metadata: dict = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
     """Optional metadata about the entry."""
 
     def __post_init__(self) -> None:

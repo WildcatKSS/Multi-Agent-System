@@ -1,7 +1,7 @@
 """In-memory episodic memory store (for MVP)."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from mas.memory.contracts import EpisodicMemoryStore, MemoryEntry, MemoryKey
 
@@ -13,6 +13,12 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
 
     MVP implementation: stores in-process. For v2, replace with
     persistent backend (PostgreSQL, MongoDB, etc).
+
+    Performance notes:
+    - record/retrieve by key: O(1)
+    - retrieve_by_namespace: O(n) scans all entries (acceptable for MVP)
+    - No pagination support (future enhancement)
+    - Memory grows unbounded; use clear_expired() or TTL to manage size
     """
 
     def __init__(self) -> None:
@@ -28,7 +34,7 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
         """
         try:
             full_key = entry.key.full_key()
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(timezone.utc).replace(tzinfo=None)
 
             self._entries[full_key] = (entry, timestamp)
 
@@ -98,7 +104,7 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
         try:
             results = []
 
-            for full_key, (entry, timestamp) in self._entries.items():
+            for full_key, (entry, timestamp) in list(self._entries.items()):
                 if full_key.startswith(f"{namespace}:"):
                     if not self._is_expired(timestamp, entry.ttl_seconds):
                         results.append(entry)
@@ -155,4 +161,4 @@ class EpisodicMemoryStoreImpl(EpisodicMemoryStore):
             True if expired, False otherwise.
         """
         expiration = timestamp + timedelta(seconds=ttl_seconds)
-        return datetime.utcnow() > expiration
+        return datetime.now(timezone.utc).replace(tzinfo=None) > expiration
