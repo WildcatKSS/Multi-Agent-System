@@ -303,3 +303,46 @@ class TestRuntimeAudit:
             WorkflowState.RUNNING,
             WorkflowState.COMPLETED,
         ]
+
+
+class TestRuntimeCircularDependencies:
+    """Plans with circular dependencies are rejected at creation time."""
+
+    def test_circular_dependency_direct_rejected(self) -> None:
+        """Direct cycle: step-1 -> step-2 -> step-1 is rejected."""
+        with pytest.raises(ValueError, match="Circular dependency detected"):
+            Plan(
+                id="plan-1",
+                task_id="task-1",
+                steps=[
+                    Step(id="step-1", action="work", depends_on=["step-2"]),
+                    Step(id="step-2", action="work", depends_on=["step-1"]),
+                ],
+            )
+
+    def test_circular_dependency_indirect_rejected(self) -> None:
+        """Indirect cycle: step-1 -> step-2 -> step-3 -> step-1 is rejected."""
+        with pytest.raises(ValueError, match="Circular dependency detected"):
+            Plan(
+                id="plan-1",
+                task_id="task-1",
+                steps=[
+                    Step(id="step-1", action="work", depends_on=["step-2"]),
+                    Step(id="step-2", action="work", depends_on=["step-3"]),
+                    Step(id="step-3", action="work", depends_on=["step-1"]),
+                ],
+            )
+
+    def test_valid_dag_accepted(self) -> None:
+        """Valid DAG with independent branches is accepted."""
+        plan = Plan(
+            id="plan-1",
+            task_id="task-1",
+            steps=[
+                Step(id="a", action="work"),
+                Step(id="b", action="work"),
+                Step(id="c", action="work", depends_on=["a", "b"]),
+            ],
+        )
+        assert plan.id == "plan-1"
+        assert len(plan.steps) == 3
