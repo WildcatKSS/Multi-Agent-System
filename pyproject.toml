@@ -20,10 +20,13 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = [
+    "redis>=5.0",  # Redis client for working memory
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+memory = ["redis>=5.0"]  # Optional memory layer
 
 [project.scripts]
 mas = "mas.cli:main"
