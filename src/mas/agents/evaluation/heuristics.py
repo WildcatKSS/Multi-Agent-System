@@ -52,7 +52,7 @@ class HeuristicScorer:
         """
         self.config = config or HeuristicConfig()
 
-    def score(self, output: dict, context: dict | None = None) -> list:
+    def score(self, output: dict, context: dict | None = None) -> list[HeuristicScore]:
         """Score step output using heuristics.
 
         Args:

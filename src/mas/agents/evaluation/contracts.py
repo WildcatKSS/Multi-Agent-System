@@ -79,10 +79,10 @@ class EvaluationReport:
     overall_score: float
     """Overall score (0-1)."""
 
-    rule_results: dict = field(default_factory=dict)
+    rule_results: dict[str, bool] = field(default_factory=dict)
     """Results of individual rules (name -> bool)."""
 
-    heuristic_scores: list = field(default_factory=list)
+    heuristic_scores: list["HeuristicScore"] = field(default_factory=list)
     """Scores from heuristics."""
 
     feedback: str = ""

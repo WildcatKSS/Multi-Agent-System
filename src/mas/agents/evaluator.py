@@ -84,7 +84,7 @@ class EvaluatorAgent:
     def _generate_feedback(
         self,
         rules_passed: bool,
-        rule_results: dict,
+        rule_results: dict[str, bool],
         heuristic_scores: list,
         overall_score: float,
     ) -> str:
