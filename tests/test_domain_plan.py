@@ -159,3 +159,44 @@ class TestPlan:
         steps.append(Step(id="step-4", action="work", status=StepStatus.PENDING))
         plan_incomplete = Plan(id="plan-1", task_id="task-1", steps=steps)
         assert not plan_incomplete.all_steps_completed()
+
+    def test_plan_circular_dependency_direct(self) -> None:
+        """Plan creation fails if there's a direct circular dependency."""
+        # step-1 depends on step-2, step-2 depends on step-1
+        steps = [
+            Step(id="step-1", action="work", depends_on=["step-2"]),
+            Step(id="step-2", action="work", depends_on=["step-1"]),
+        ]
+        with pytest.raises(ValueError, match="Circular dependency detected"):
+            Plan(id="plan-1", task_id="task-1", steps=steps)
+
+    def test_plan_circular_dependency_indirect(self) -> None:
+        """Plan creation fails if there's an indirect circular dependency."""
+        # step-1 -> step-2 -> step-3 -> step-1
+        steps = [
+            Step(id="step-1", action="work", depends_on=["step-2"]),
+            Step(id="step-2", action="work", depends_on=["step-3"]),
+            Step(id="step-3", action="work", depends_on=["step-1"]),
+        ]
+        with pytest.raises(ValueError, match="Circular dependency detected"):
+            Plan(id="plan-1", task_id="task-1", steps=steps)
+
+    def test_plan_no_circular_dependency_linear(self) -> None:
+        """Plan creation succeeds with linear dependencies."""
+        steps = [
+            Step(id="step-1", action="work", depends_on=[]),
+            Step(id="step-2", action="work", depends_on=["step-1"]),
+            Step(id="step-3", action="work", depends_on=["step-2"]),
+        ]
+        plan = Plan(id="plan-1", task_id="task-1", steps=steps)
+        assert plan.id == "plan-1"
+
+    def test_plan_no_circular_dependency_dag(self) -> None:
+        """Plan creation succeeds with valid DAG (directed acyclic graph)."""
+        steps = [
+            Step(id="step-1", action="work", depends_on=[]),
+            Step(id="step-2", action="work", depends_on=[]),
+            Step(id="step-3", action="work", depends_on=["step-1", "step-2"]),
+        ]
+        plan = Plan(id="plan-1", task_id="task-1", steps=steps)
+        assert plan.id == "plan-1"
