@@ -183,6 +183,10 @@ class TestPlannerStepGeneration:
 
         step_ids = [s.id for s in plan.steps]
         assert len(step_ids) == len(set(step_ids))
+        # Verify zero-padded format (e.g., step-01, step-02)
+        for step_id in step_ids:
+            assert step_id.startswith("step-")
+            assert "-" in step_id
 
     def test_plan_steps_have_actions(self) -> None:
         """All steps have valid actions."""

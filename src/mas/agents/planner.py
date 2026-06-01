@@ -76,13 +76,15 @@ class Planner:
         self._validate_linear(steps)
 
         # Create plan with linearity
+        # Cost/time estimation is intentionally simple for MVP.
+        # Future versions will consider action type, task complexity, and historical data.
         plan = Plan(
             id=f"plan:{task.id}:{uuid.uuid4().hex[:8]}",
             task_id=task.id,
             steps=steps,
-            estimated_cost=len(steps) * 1.0,  # Baseline: 1.0 per step
-            estimated_time_seconds=len(steps) * 5.0,  # Baseline: 5s per step
-            reasoning="Baseline linear plan from task decomposition",
+            estimated_cost=len(steps) * 1.0,  # MVP baseline: 1.0 unit per step
+            estimated_time_seconds=len(steps) * 5.0,  # MVP baseline: 5s per step
+            reasoning="Linear plan from task decomposition (MVP v1)",
         )
 
         return plan
@@ -90,16 +92,19 @@ class Planner:
     def _decompose_task(self, task: Task) -> list[Step]:
         """Decompose task into a linear chain of steps.
 
-        Baseline implementation:
-        1. Create step from task description
-        2. Add retrieval step if needed
-        3. Add processing step if needed
-        4. Add output step
+        MVP Baseline implementation uses simple keyword matching for action selection.
+        Future versions will use LLM-based decomposition for more sophisticated planning.
+
+        Steps:
+        1. Optional retrieval step (if keywords suggest data gathering)
+        2. Required process step (core task execution)
+        3. Optional output step (if keywords suggest results generation)
         """
         steps: list[Step] = []
         step_counter = 0
 
-        # Parse task for keywords (baseline heuristics)
+        # Parse task for keywords (simple heuristics for MVP baseline)
+        # Future: Replace with LLM-based action detection
         task_lower = task.description.lower()
 
         # Step 1: Retrieve/gather information
@@ -107,7 +112,7 @@ class Planner:
             step_counter += 1
             steps.append(
                 Step(
-                    id=f"step-{step_counter}",
+                    id=f"step-{step_counter:02d}",
                     action="retrieve_data",
                     inputs={"query": task.description},
                     depends_on=[],
@@ -117,10 +122,10 @@ class Planner:
 
         # Step 2: Process/analyze (always present)
         step_counter += 1
-        prev_step = f"step-{step_counter - 1}" if steps else None
+        prev_step = f"step-{step_counter - 1:02d}" if steps else None
         steps.append(
             Step(
-                id=f"step-{step_counter}",
+                id=f"step-{step_counter:02d}",
                 action="process",
                 inputs={"goal": task.goal},
                 depends_on=[prev_step] if prev_step else [],
@@ -136,10 +141,10 @@ class Planner:
             step_counter += 1
             steps.append(
                 Step(
-                    id=f"step-{step_counter}",
+                    id=f"step-{step_counter:02d}",
                     action="output_result",
                     inputs={"format": "json"},
-                    depends_on=[f"step-{step_counter - 1}"],
+                    depends_on=[f"step-{step_counter - 1:02d}"],
                     metadata={"task_id": task.id},
                 )
             )
