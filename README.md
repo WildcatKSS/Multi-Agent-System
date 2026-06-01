@@ -13,7 +13,7 @@ for the full reference architecture.
 
 ## Status
 
-**Implementation in progress** — Milestone A ✅ complete, Milestone B 🚧 in progress.
+**Implementation in progress** — Milestone A ✅ complete, Milestone B ✅ complete, Milestone C 🚧 in progress.
 
 **Completed (9 PRs):**
 - PR-01: Project Bootstrap & Repository Foundations
