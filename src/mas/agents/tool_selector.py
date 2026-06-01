@@ -1,8 +1,12 @@
 """Tool Selection Agent: maps plan steps to tools."""
 
+import logging
+
 from mas.domain.plan import Plan
 from mas.tools.registry import ToolRegistry
 from mas.tools.contract import ToolSelection
+
+logger = logging.getLogger(__name__)
 
 
 class ToolSelector:
@@ -49,7 +53,7 @@ class ToolSelector:
                 step_id=step.id,
                 tool_name=tool_name,
                 tool_inputs=step.inputs,
-                required_tools=step.depends_on,
+                required_tools=step.depends_on,  # Step IDs this step depends on
             )
             selections.append(selection)
 
@@ -73,9 +77,7 @@ class ToolSelector:
         # MVP: action name should match a tool name
         # Example: action="retrieve_data" → tool_name="retrieve_data"
         if not self.registry.has(action):
-            raise ValueError(
-                f"No tool registered for action '{action}'. "
-                f"Available tools: {self.registry.list_names()}"
-            )
+            logger.debug(f"Available tools: {self.registry.list_names()}")
+            raise ValueError(f"No tool registered for action '{action}'")
 
         return action

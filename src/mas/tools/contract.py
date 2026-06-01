@@ -16,7 +16,8 @@ class Tool:
     """Output schema/documentation for the tool."""
 
     prerequisites: list[str] = field(default_factory=list)
-    """Tools that must be run before this one."""
+    """Tools that must be run before this one.
+    Note: Validation and resolution in v2 (capability-aware selection phase)."""
 
     cost_estimate: float = 1.0
     """Estimated cost units for this tool."""

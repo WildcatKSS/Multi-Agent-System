@@ -1,6 +1,7 @@
 """Tool registry: maps tool names to tool implementations."""
 
 from dataclasses import dataclass
+from typing import Any, Callable
 
 from mas.tools.contract import Tool
 
@@ -10,7 +11,7 @@ class RegisteredTool:
     """A tool registered in the registry."""
 
     tool: Tool
-    handler: callable
+    handler: Callable[..., Any]
     """The function or callable that implements this tool."""
 
 
@@ -24,12 +25,13 @@ class ToolRegistry:
         """Initialize an empty registry."""
         self._tools: dict[str, RegisteredTool] = {}
 
-    def register(self, tool: Tool, handler: callable) -> None:
+    def register(self, tool: Tool, handler: Callable[..., Any]) -> None:
         """Register a tool with its handler.
 
         Args:
             tool: Tool definition with metadata
-            handler: Callable that implements the tool
+            handler: Callable that implements the tool.
+                     Expected signature: handler(step_inputs: dict) -> dict
 
         Raises:
             ValueError: If tool name is empty or already registered
@@ -53,7 +55,7 @@ class ToolRegistry:
         registered = self._tools.get(tool_name)
         return registered.tool if registered else None
 
-    def get_handler(self, tool_name: str) -> callable | None:
+    def get_handler(self, tool_name: str) -> Callable[..., Any] | None:
         """Get the handler function for a tool.
 
         Args:
