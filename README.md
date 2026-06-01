@@ -100,18 +100,26 @@ This means:
 └── README.md
 ```
 
-## Local Run
+## Installation
 
-Create a virtual environment, install the package in editable mode with dev
-extras, then run the test suite and the CLI placeholder:
+See [`INSTALL.md`](INSTALL.md) for comprehensive setup instructions, including:
+- System requirements for Ubuntu, macOS, and other Linux distributions
+- Python virtual environment setup
+- Dependency installation (with optional Redis for memory layer)
+- Redis configuration and troubleshooting
+- Verification steps
+
+## Quick Start
+
+For a quick test on a system with Python 3.12+:
 
 ```bash
 # Create and activate virtual environment
-python3 -m venv venv
+python3.12 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install package with dev dependencies
-pip install -e ".[dev]"
+# Install package with dev dependencies (and optional memory layer)
+pip install -e ".[dev,memory]"
 
 # Run tests
 pytest -v
@@ -119,7 +127,6 @@ pytest -v
 # Try the CLI
 python -m mas --version
 python -m mas run
-mas --version
 ```
 
 Expected output of `python -m mas run` at this stage is a placeholder
