@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from mas.agents.evaluation.contracts import HeuristicScore
 
 
-@dataclass
+@dataclass(frozen=True)
 class HeuristicConfig:
     """Configuration for heuristic scoring."""
 

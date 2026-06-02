@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Callable
 
 
 class RuleType(str, Enum):
@@ -32,6 +33,11 @@ class EvaluationRule:
 
     weight: float = 1.0
     """Weight in scoring (0-1)."""
+
+    predicate: Callable[[dict, dict], bool] | None = field(
+        default=None, hash=False, compare=False, repr=False
+    )
+    """Optional callable(output, context) -> bool. None means always pass."""
 
     def __post_init__(self) -> None:
         """Validate rule on creation."""

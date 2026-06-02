@@ -47,6 +47,9 @@ class InputDispatcher:
         Raises:
             ValueError: If input source is unknown.
         """
+        if input_source not in InputSource.__members__.values():
+            raise ValueError(f"Unknown input source: {input_source}")
+
         logger.debug(
             f"Dispatching input of type {input_source.value}",
             extra={"source": input_source.value},

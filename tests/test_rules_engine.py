@@ -82,6 +82,7 @@ class TestDeterministicRulesEngine:
             name="MustPass",
             description="Blocking rule",
             rule_type=RuleType.BLOCKING,
+            predicate=lambda o, c: False,
         )
         engine.add_rule(blocking_rule)
 
@@ -97,6 +98,7 @@ class TestDeterministicRulesEngine:
             name="Essential",
             description="Required rule",
             rule_type=RuleType.REQUIRED,
+            predicate=lambda o, c: False,
         )
         engine.add_rule(required_rule)
 
@@ -112,6 +114,7 @@ class TestDeterministicRulesEngine:
             name="Optional",
             description="Optional rule",
             rule_type=RuleType.OPTIONAL,
+            predicate=lambda o, c: False,
         )
         engine.add_rule(optional_rule)
 
@@ -128,6 +131,7 @@ class TestDeterministicRulesEngine:
                 name="Blocking",
                 description="Blocking",
                 rule_type=RuleType.BLOCKING,
+                predicate=lambda o, c: False,
             )
         )
         engine.add_rule(
@@ -135,6 +139,7 @@ class TestDeterministicRulesEngine:
                 name="Optional",
                 description="Optional",
                 rule_type=RuleType.OPTIONAL,
+                predicate=lambda o, c: False,
             )
         )
 
