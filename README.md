@@ -99,33 +99,47 @@ This means:
 └── README.md
 ```
 
-## Local Run
+## Quick Start
 
-Create a virtual environment, install the package in editable mode with dev
-extras, then run the test suite and the CLI placeholder:
+Run the installer — it installs the system dependencies, creates a virtual
+environment, and installs the package with dev extras:
 
 ```bash
-# Create and activate virtual environment
-python3 -m venv venv
+./install.sh
+```
+
+Then activate the environment, run the test suite, and try the CLI placeholder:
+
+```bash
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install package with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
 pytest -v
 
-# Try the CLI
 python -m mas --version
 python -m mas run
 mas --version
 ```
+
+System packages are declared in [`system-packages.txt`](system-packages.txt);
+Python dependencies live in [`pyproject.toml`](pyproject.toml). The installer is
+idempotent and can be re-run safely.
 
 Expected output of `python -m mas run` at this stage is a placeholder
 notice — runtime behavior arrives in later milestones (see
 [`docs/roadmap.md`](docs/roadmap.md)).
 
 To exit the virtual environment later, run `deactivate`.
+
+<details>
+<summary>Manual setup (without the installer)</summary>
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -e ".[dev]"
+```
+
+</details>
 
 ## Roadmap
 
