@@ -71,4 +71,6 @@ class DeterministicRulesEngine:
         Returns:
             True if rule passes, False otherwise.
         """
-        return True
+        if rule.predicate is None:
+            return True
+        return rule.predicate(output, context)

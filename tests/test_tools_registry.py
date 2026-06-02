@@ -57,7 +57,7 @@ class TestToolRegistry:
         registry.register(tool1, _dummy_handler)
         registry.register(tool2, _dummy_handler)
 
-        tools = registry.list()
+        tools = registry.all_tools()
         assert len(tools) == 2
         assert tools[0].name in ["search", "parse"]
         assert tools[1].name in ["search", "parse"]

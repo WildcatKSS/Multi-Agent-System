@@ -83,7 +83,7 @@ class ToolRegistry:
         """
         return tool_name in self._tools
 
-    def list(self) -> list[Tool]:
+    def all_tools(self) -> list[Tool]:
         """List all registered tools.
 
         Returns:

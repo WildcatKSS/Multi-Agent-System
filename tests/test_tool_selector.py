@@ -6,7 +6,7 @@ from mas.agents.tool_selector import ToolSelector
 from mas.domain.plan import Plan, Step
 from mas.domain.task import Task
 from mas.tools.registry import ToolRegistry
-from mas.tools.contract import Tool
+from mas.tools.contract import Tool, ToolSelection
 
 
 def _search_handler(*args, **kwargs):

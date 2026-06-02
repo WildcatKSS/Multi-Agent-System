@@ -185,6 +185,7 @@ class TestEvaluatorAgent:
                 name="Critical",
                 description="Critical rule",
                 rule_type=RuleType.BLOCKING,
+                predicate=lambda o, c: False,
             )
         )
         agent = EvaluatorAgent(engine)
