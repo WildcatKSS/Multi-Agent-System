@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 #
-# install.sh — installeert systeem- en project-dependencies voor het mas-project.
+# install.sh — installs system and project dependencies for the mas project.
 #
-# Stappen:
-#   1. Installeer systeem-packages uit system-packages.txt (Debian/Ubuntu apt).
-#   2. Verifieer dat Python 3.12+ aanwezig is.
-#   3. Maak een virtual environment aan (venv/).
-#   4. Installeer het pakket met dev-extras: pip install -e ".[dev]".
+# Steps:
+#   1. Install system packages from system-packages.txt (Debian/Ubuntu apt).
+#   2. Verify Python 3.12+ is available.
+#   3. Create a virtual environment (venv/).
+#   4. Install the package with dev extras: pip install -e ".[dev]".
 #
-# Systeem-packages staan in system-packages.txt; Python-deps in pyproject.toml.
-# Het script is idempotent en kan veilig opnieuw worden uitgevoerd.
+# System packages are declared in system-packages.txt; Python deps in pyproject.toml.
+# The script is idempotent and can be re-run safely.
 
 set -euo pipefail
 
@@ -22,107 +22,124 @@ info() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
 err()  { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; }
 
-# Globale state, gezet door check_python.
+# Global state set by check_python.
 PY=""
 
-# --- Stap 1: systeem-dependencies ---
+# Run a command with sudo when not already root; falls back gracefully.
+run_privileged() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    elif command -v sudo >/dev/null 2>&1; then
+        sudo "$@"
+    else
+        err "No root privileges and no sudo — cannot run: $*"
+        return 1
+    fi
+}
+
+# --- Step 1: system dependencies ---
 install_system_deps() {
-    info "Systeem-dependencies controleren..."
+    info "Checking system dependencies..."
 
     if [ ! -f "$PKG_FILE" ]; then
-        warn "$PKG_FILE niet gevonden; systeem-dependencies worden overgeslagen."
+        warn "$PKG_FILE not found; skipping system dependencies."
         return 0
     fi
 
-    # Lees packages in een array; skip comments en lege regels.
+    # Read packages into an array; skip comments and blank lines.
     local packages=()
     local line
     while IFS= read -r line || [ -n "$line" ]; do
-        line="${line%%#*}"              # strip inline/regel-comments
-        line="$(echo "$line" | xargs)"  # trim witruimte
+        line="${line%%#*}"                        # strip inline comments
+        line="${line#"${line%%[![:space:]]*}"}"   # trim leading whitespace
+        line="${line%"${line##*[![:space:]]}"}"   # trim trailing whitespace
         [ -z "$line" ] && continue
         packages+=("$line")
     done < "$PKG_FILE"
 
     if [ "${#packages[@]}" -eq 0 ]; then
-        info "Geen systeem-packages opgegeven; niets te installeren."
+        info "No system packages listed; nothing to install."
         return 0
     fi
 
     if ! command -v apt-get >/dev/null 2>&1; then
-        warn "apt-get niet gevonden — geen Debian/Ubuntu systeem."
-        warn "Installeer deze packages handmatig: ${packages[*]}"
+        warn "apt-get not found — not a Debian/Ubuntu system."
+        warn "Install these packages manually: ${packages[*]}"
         return 0
     fi
 
-    local sudo_cmd=""
-    if [ "$(id -u)" -eq 0 ]; then
-        sudo_cmd=""
-    elif command -v sudo >/dev/null 2>&1; then
-        sudo_cmd="sudo"
-    else
-        warn "Geen root-rechten en geen sudo — apt-installatie overgeslagen."
-        warn "Installeer deze packages handmatig: ${packages[*]}"
+    if [ "$(id -u)" -ne 0 ] && ! command -v sudo >/dev/null 2>&1; then
+        warn "No root privileges and no sudo — skipping apt installation."
+        warn "Install these packages manually: ${packages[*]}"
         return 0
     fi
 
-    info "Installeren via apt-get: ${packages[*]}"
-    # apt-failures (bv. onbereikbare/ongerelateerde repos in beperkte omgevingen)
-    # mogen de Python-stappen niet blokkeren — de toolchain is vaak al aanwezig.
-    if ! $sudo_cmd apt-get update -qq; then
-        warn "apt-get update mislukt; ga door met installatie van de packages."
+    info "Installing via apt-get: ${packages[*]}"
+    # apt failures (e.g. unreachable PPAs in restricted environments) must not
+    # block the Python steps — the toolchain is often already present.
+    if ! run_privileged apt-get update -qq; then
+        warn "apt-get update failed; continuing with package installation."
     fi
-    if ! $sudo_cmd apt-get install -y "${packages[@]}"; then
-        warn "apt-get install mislukt; controleer of deze packages al aanwezig zijn: ${packages[*]}"
+    if ! run_privileged apt-get install -y "${packages[@]}"; then
+        warn "apt-get install failed; verify these packages are present: ${packages[*]}"
     fi
 }
 
-# --- Stap 2: Python 3.12+ verifiëren ---
+# --- Step 2: verify Python 3.12+ ---
 check_python() {
-    info "Python 3.12+ controleren..."
+    info "Checking for Python 3.12+..."
 
-    if command -v python3.12 >/dev/null 2>&1; then
-        PY="python3.12"
-    elif command -v python3 >/dev/null 2>&1; then
-        PY="python3"
-    else
-        err "Geen python3 gevonden. Installeer Python 3.12+ en probeer opnieuw."
+    local candidates=()
+    command -v python3.12 >/dev/null 2>&1 && candidates+=("python3.12")
+    command -v python3    >/dev/null 2>&1 && candidates+=("python3")
+
+    if [ "${#candidates[@]}" -eq 0 ]; then
+        err "No python3 found. Install Python 3.12+ and try again."
         exit 1
     fi
 
-    if ! "$PY" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else 1)'; then
-        local found
-        found="$("$PY" -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])')"
-        err "Python 3.12+ vereist, gevonden $found ($PY)."
-        exit 1
-    fi
+    for candidate in "${candidates[@]}"; do
+        if "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else 1)' 2>/dev/null; then
+            PY="$candidate"
+            info "Python OK: $("$PY" --version 2>&1) ($PY)"
+            return 0
+        fi
+    done
 
-    info "Python OK: $("$PY" --version 2>&1) ($PY)"
+    local found
+    found="$("${candidates[0]}" -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])')"
+    err "Python 3.12+ required; found $found. Install python3.12 and try again."
+    exit 1
 }
 
-# --- Stap 3: virtual environment ---
+# --- Step 3: virtual environment ---
 create_venv() {
     if [ -d "$VENV_DIR" ]; then
-        info "Bestaande venv hergebruiken: $VENV_DIR"
+        info "Reusing existing venv: $VENV_DIR"
     else
-        info "Virtual environment aanmaken: $VENV_DIR"
+        info "Creating virtual environment: $VENV_DIR"
         "$PY" -m venv "$VENV_DIR"
     fi
 }
 
-# --- Stap 4: Python-dependencies ---
+# --- Step 4: Python dependencies ---
 install_python_deps() {
-    info "Python-dependencies installeren (pip install -e \".[dev]\")..."
+    if [ ! -f "$SCRIPT_DIR/pyproject.toml" ]; then
+        err "pyproject.toml not found in $SCRIPT_DIR. Are you running from the project root?"
+        exit 1
+    fi
+
+    info "Installing Python dependencies (pip install -e \".[dev]\")..."
     "$VENV_DIR/bin/python" -m pip install --upgrade pip
     "$VENV_DIR/bin/python" -m pip install -e "$SCRIPT_DIR[dev]"
 }
 
-# --- Afsluitende samenvatting ---
+# --- Summary ---
 print_summary() {
-    info "Installatie voltooid."
+    info "Installation complete."
     cat <<'EOF'
 
-Activeer de omgeving en draai de tests:
+Activate the environment and run the tests:
 
     source venv/bin/activate
     pytest -v
