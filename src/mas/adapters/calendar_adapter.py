@@ -1,6 +1,7 @@
 """Calendar event to Task adapter."""
 
 import logging
+import uuid
 
 from mas.adapters.contracts import CalendarInput
 from mas.domain.task import Task
@@ -22,7 +23,7 @@ class CalendarAdapter:
             Task representing the calendar event.
         """
         if task_id is None:
-            task_id = f"calendar-{hash(event.title + event.start_time) % 10000000:07d}"
+            task_id = f"calendar-{uuid.uuid4().hex[:12]}"
 
         logger.debug(
             f"Adapting calendar event to task {task_id}",

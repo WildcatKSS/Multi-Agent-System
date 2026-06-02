@@ -37,7 +37,12 @@ class EvaluationRule:
     predicate: Callable[[dict, dict], bool] | None = field(
         default=None, hash=False, compare=False, repr=False
     )
-    """Optional callable(output, context) -> bool. None means always pass."""
+    """Optional callable(output, context) -> bool. None means always pass.
+
+    SECURITY WARNING: Predicates are executed directly without sandboxing.
+    Only use with hardcoded/internal predicates. NEVER deserialize predicates
+    from external sources (config files, APIs, user input, databases).
+    """
 
     def __post_init__(self) -> None:
         """Validate rule on creation."""

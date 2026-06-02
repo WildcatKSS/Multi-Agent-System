@@ -1,6 +1,7 @@
 """Document to Task adapter."""
 
 import logging
+import uuid
 
 from mas.adapters.contracts import DocumentInput
 from mas.domain.task import Task
@@ -22,7 +23,7 @@ class DocumentAdapter:
             Task representing the document.
         """
         if task_id is None:
-            task_id = f"doc-{hash(document.title + document.document_type) % 10000000:07d}"
+            task_id = f"doc-{uuid.uuid4().hex[:12]}"
 
         logger.debug(
             f"Adapting document to task {task_id}",
@@ -49,7 +50,11 @@ class DocumentAdapter:
             "content_length": len(document.content),
         }
 
-        context.update(document.metadata)
+        # Safely merge whitelisted metadata keys only
+        allowed_metadata_keys = {"keywords", "author", "language", "encoding"}
+        for key, value in document.metadata.items():
+            if key in allowed_metadata_keys:
+                context[f"metadata_{key}"] = value
 
         task = Task(
             id=task_id,

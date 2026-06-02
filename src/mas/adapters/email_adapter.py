@@ -1,6 +1,7 @@
 """Email to Task adapter."""
 
 import logging
+import uuid
 
 from mas.adapters.contracts import EmailInput
 from mas.domain.task import Task
@@ -22,7 +23,7 @@ class EmailAdapter:
             Task representing the email.
         """
         if task_id is None:
-            task_id = f"email-{hash(email.sender + email.subject) % 10000000:07d}"
+            task_id = f"email-{uuid.uuid4().hex[:12]}"
 
         logger.debug(
             f"Adapting email to task {task_id}",
@@ -50,7 +51,7 @@ class EmailAdapter:
 
         logger.debug(
             f"Email adapted to task {task_id}",
-            extra={"task_id": task_id, "sender": email.sender},
+            extra={"task_id": task_id},
         )
 
         return task
