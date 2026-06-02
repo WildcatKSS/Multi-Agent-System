@@ -8,4 +8,4 @@ python3-pip
 build-essential
 
 # Milestone C (working memory). Uncomment when Redis lands:
-# redis-server
+redis-server
