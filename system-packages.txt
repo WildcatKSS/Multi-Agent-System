@@ -1,0 +1,11 @@
+# OS-level packages voor het mas-project (Debian/Ubuntu apt-namen).
+# Eén package per regel. Regels met # en lege regels worden genegeerd.
+# Python-packages NIET hier zetten — die staan in pyproject.toml.
+
+python3
+python3-venv
+python3-pip
+build-essential
+
+# Milestone C (working memory). Uncomment zodra Redis landt:
+# redis-server
