@@ -1,6 +1,7 @@
 """Transcript to Task adapter."""
 
 import logging
+import uuid
 
 from mas.adapters.contracts import TranscriptInput
 from mas.domain.task import Task
@@ -22,7 +23,7 @@ class TranscriptAdapter:
             Task representing the transcript.
         """
         if task_id is None:
-            task_id = f"transcript-{hash(transcript.title) % 10000000:07d}"
+            task_id = f"transcript-{uuid.uuid4().hex[:12]}"
 
         logger.debug(
             f"Adapting transcript to task {task_id}",

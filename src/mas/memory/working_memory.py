@@ -26,12 +26,26 @@ class WorkingMemoryConfig:
     key_prefix: str = "mas:"
     """Prefix for all keys to avoid collisions."""
 
+    password: str | None = None
+    """Redis password (use environment variable for production)."""
+
+    username: str | None = None
+    """Redis username for ACL (Redis 6+)."""
+
+    ssl: bool = False
+    """Enable SSL/TLS for Redis connection."""
+
+    ssl_certfile: str | None = None
+    """Path to SSL certificate file for Redis."""
+
     def __post_init__(self) -> None:
         """Validate configuration."""
         if self.ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be positive")
         if self.port <= 0:
             raise ValueError("port must be positive")
+        if self.ssl_certfile and not self.ssl:
+            raise ValueError("ssl_certfile requires ssl=True")
 
 
 class RedisWorkingMemory:
@@ -75,6 +89,10 @@ class RedisWorkingMemory:
             host=self.config.host,
             port=self.config.port,
             db=self.config.db,
+            username=self.config.username,
+            password=self.config.password,
+            ssl=self.config.ssl,
+            ssl_certfile=self.config.ssl_certfile,
             decode_responses=True,
         )
 
@@ -110,11 +128,25 @@ class RedisWorkingMemory:
 
         Returns:
             The value if found, None otherwise.
+
+        Raises:
+            ValueError: If retrieved data is invalid JSON or not a dict.
         """
         raw = self._client.get(self._full_key(key))
         if raw is None:
             return None
-        return json.loads(raw)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            logger.error(f"Failed to deserialize value for key {key}: invalid JSON")
+            raise ValueError(f"Invalid JSON stored for key {key}") from exc
+
+        if not isinstance(data, dict):
+            logger.error(f"Retrieved value for key {key} is not a dict: {type(data)}")
+            raise ValueError(f"Retrieved value for key {key} must be a dict, got {type(data)}")
+
+        return data
 
     def delete(self, key: str) -> None:
         """Delete a key.
