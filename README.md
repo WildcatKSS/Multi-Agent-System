@@ -17,10 +17,10 @@ for the full reference architecture.
 
 - **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
 - **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
-- **Milestone C — Reliability & Operations:** 🚧 In Progress (1/3 PRs)
+- **Milestone C — Reliability & Operations:** 🚧 In Progress (0/3 PRs)
 - **Milestone D — Validation & Documentation:** ⏳ Todo (0/2 PRs)
 
-### Completed (10 PRs):
+### Completed (9 PRs):
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
@@ -30,10 +30,9 @@ for the full reference architecture.
 - PR-07: Input Adapters v1 (Email/Calendar/Document/Transcript)
 - PR-08: Self-Healing Agent v1 (Retry/Fallback/Escalation)
 - PR-09: Evaluator Agent v1 (Rules + Heuristics + Threshold)
-- PR-10: Memory Layer v1 (Redis Working + Episodic Store)
 
 **In Progress:**
-- PR-11: Guardrails Engine
+- PR-10: Memory Layer v1
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
@@ -100,44 +99,18 @@ This means:
 └── README.md
 ```
 
-## Installation
+## Local Run
 
-### Automated Installation (Recommended)
-
-For a one-command setup that handles everything:
-
-```bash
-./install.sh              # Install with dev dependencies
-./install.sh --with-redis # Install with Redis for production memory layer
-```
-
-This script will:
-- Check for Python 3.12+
-- Create a virtual environment
-- Install all dependencies
-- Run verification tests
-- Optionally start Redis server
-
-### Manual Installation
-
-See [`INSTALL.md`](INSTALL.md) for comprehensive setup instructions, including:
-- System requirements for Ubuntu, macOS, and other Linux distributions
-- Python virtual environment setup
-- Dependency installation (with optional Redis for memory layer)
-- Redis configuration and troubleshooting
-- Verification steps
-
-## Quick Start
-
-For a quick test on a system with Python 3.12+:
+Create a virtual environment, install the package in editable mode with dev
+extras, then run the test suite and the CLI placeholder:
 
 ```bash
 # Create and activate virtual environment
-python3.12 -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install package with dev dependencies (and optional memory layer)
-pip install -e ".[dev,memory]"
+# Install package with dev dependencies
+pip install -e ".[dev]"
 
 # Run tests
 pytest -v
@@ -145,47 +118,14 @@ pytest -v
 # Try the CLI
 python -m mas --version
 python -m mas run
+mas --version
 ```
 
-To exit the virtual environment later, run `deactivate`.
-
-## Running the System
-
-### Start the Agent System
-
-Once installed and with the virtual environment activated:
-
-```bash
-# Run the agent system
-mas run
-
-# Run specific agent (when implemented in future milestones)
-mas run --agent planner
-
-# Run with debug logging
-mas run --debug
-```
-
-At this stage of development, `mas run` displays a placeholder message.
-Full agent orchestration is implemented in later milestones (see
+Expected output of `python -m mas run` at this stage is a placeholder
+notice — runtime behavior arrives in later milestones (see
 [`docs/roadmap.md`](docs/roadmap.md)).
 
-### Development Commands
-
-```bash
-# Run test suite
-pytest -v                    # All tests with verbose output
-pytest tests/test_agents.py  # Specific test file
-pytest -k "test_plan"        # Tests matching pattern
-pytest --cov=src/mas tests/  # With coverage report
-
-# Check code quality
-mypy src/mas/                # Type checking (when tools added)
-
-# Run CLI
-mas --version                # Show version
-mas --help                   # Show available commands
-```
+To exit the virtual environment later, run `deactivate`.
 
 ## Roadmap
 
