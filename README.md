@@ -17,10 +17,10 @@ for the full reference architecture.
 
 - **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
 - **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
-- **Milestone C — Reliability & Operations:** 🚧 In Progress (2/3 PRs)
-- **Milestone D — Validation & Documentation:** ⏳ Todo (0/2 PRs)
+- **Milestone C — Reliability & Operations:** ✅ Complete (3/3 PRs)
+- **Milestone D — Validation & Documentation:** 🚧 In Progress (1/2 PRs)
 
-### Completed (12 PRs):
+### Completed (13 PRs):
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
@@ -33,9 +33,10 @@ for the full reference architecture.
 - PR-10: Memory Layer v1 (Redis Working + Episodic Store)
 - PR-11: Guardrails Engine (Cost/TTL/Retries/Depth Limits)
 - PR-12: Observability Baseline (Logging/Metrics/Correlation IDs)
+- PR-13: End-to-End MVP Scenario Pack (25 E2E Tests)
 
 **In Progress:**
-- PR-13: End-to-End MVP Scenario Pack
+- PR-14: Documentation & ADRs
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
