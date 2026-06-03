@@ -275,6 +275,98 @@ class TestRuntimeGuardrailsRetries:
         assert result.guard_violation.guard_type == GuardType.RETRIES
 
 
+class TestRuntimeCostValidation:
+    """Verify runtime validates step cost metadata."""
+
+    def test_reject_infinity_cost(self) -> None:
+        """Step with infinite cost is rejected at runtime."""
+        import pytest
+
+        task = _task()
+        step = Step(id="step-0", action="test", inputs={}, depends_on=[], metadata={"cost": float('inf')})
+        plan = Plan(
+            id="plan-1",
+            task_id="task-1",
+            steps=[step],
+            estimated_cost=1.0,
+            estimated_time_seconds=10.0,
+            reasoning="test",
+        )
+
+        registry = StepExecutorRegistry()
+        registry.register("test", lambda s: StepResult(success=True))
+
+        runtime = Runtime(registry=registry)
+        with pytest.raises(ValueError, match="must be finite"):
+            runtime.run(task, plan)
+
+    def test_reject_nan_cost(self) -> None:
+        """Step with NaN cost is rejected at runtime."""
+        import pytest
+
+        task = _task()
+        step = Step(id="step-0", action="test", inputs={}, depends_on=[], metadata={"cost": float('nan')})
+        plan = Plan(
+            id="plan-1",
+            task_id="task-1",
+            steps=[step],
+            estimated_cost=1.0,
+            estimated_time_seconds=10.0,
+            reasoning="test",
+        )
+
+        registry = StepExecutorRegistry()
+        registry.register("test", lambda s: StepResult(success=True))
+
+        runtime = Runtime(registry=registry)
+        with pytest.raises(ValueError, match="must be finite"):
+            runtime.run(task, plan)
+
+    def test_reject_negative_cost(self) -> None:
+        """Step with negative cost is rejected at runtime."""
+        import pytest
+
+        task = _task()
+        step = Step(id="step-0", action="test", inputs={}, depends_on=[], metadata={"cost": -5.0})
+        plan = Plan(
+            id="plan-1",
+            task_id="task-1",
+            steps=[step],
+            estimated_cost=1.0,
+            estimated_time_seconds=10.0,
+            reasoning="test",
+        )
+
+        registry = StepExecutorRegistry()
+        registry.register("test", lambda s: StepResult(success=True))
+
+        runtime = Runtime(registry=registry)
+        with pytest.raises(ValueError, match="must be non-negative"):
+            runtime.run(task, plan)
+
+    def test_reject_non_numeric_cost(self) -> None:
+        """Step with non-numeric cost is rejected at runtime."""
+        import pytest
+
+        task = _task()
+        step = Step(id="step-0", action="test", inputs={}, depends_on=[], metadata={"cost": "not a number"})
+        plan = Plan(
+            id="plan-1",
+            task_id="task-1",
+            steps=[step],
+            estimated_cost=1.0,
+            estimated_time_seconds=10.0,
+            reasoning="test",
+        )
+
+        registry = StepExecutorRegistry()
+        registry.register("test", lambda s: StepResult(success=True))
+
+        runtime = Runtime(registry=registry)
+        with pytest.raises(ValueError, match="must be numeric"):
+            runtime.run(task, plan)
+
+
 class TestRuntimeGuardrailsInteraction:
     """Verify guardrails interact correctly with runtime."""
 

@@ -90,3 +90,28 @@ class TestGuardrailsConfigValidation:
 
         with pytest.raises(AttributeError):
             config.max_cost = 200.0  # type: ignore
+
+    def test_reject_infinity_cost(self) -> None:
+        """Config rejects infinity as max_cost."""
+        with pytest.raises(ValueError, match="max_cost must be finite"):
+            GuardrailsConfig(max_cost=float('inf'))
+
+    def test_reject_negative_infinity_cost(self) -> None:
+        """Config rejects negative infinity as max_cost."""
+        with pytest.raises(ValueError, match="max_cost must be finite"):
+            GuardrailsConfig(max_cost=float('-inf'))
+
+    def test_reject_nan_cost(self) -> None:
+        """Config rejects NaN as max_cost."""
+        with pytest.raises(ValueError, match="max_cost must be finite"):
+            GuardrailsConfig(max_cost=float('nan'))
+
+    def test_reject_infinity_duration(self) -> None:
+        """Config rejects infinity as max_duration_seconds."""
+        with pytest.raises(ValueError, match="max_duration_seconds must be finite"):
+            GuardrailsConfig(max_duration_seconds=float('inf'))
+
+    def test_reject_nan_duration(self) -> None:
+        """Config rejects NaN as max_duration_seconds."""
+        with pytest.raises(ValueError, match="max_duration_seconds must be finite"):
+            GuardrailsConfig(max_duration_seconds=float('nan'))

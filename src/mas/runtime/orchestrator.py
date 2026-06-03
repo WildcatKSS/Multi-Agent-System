@@ -12,6 +12,7 @@ Readiness / skip rules:
 - A step whose action has no registered handler is SKIPPED (no-op baseline).
 """
 
+import math
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -203,7 +204,15 @@ class Runtime:
 
         if result.success:
             step.status = StepStatus.COMPLETED
-            ctx.accumulated_cost += step.metadata.get("cost", 1.0)
+            # Validate and accumulate cost (defensive: reject NaN/inf/negative values).
+            cost = step.metadata.get("cost", 1.0)
+            if not isinstance(cost, (int, float)) or isinstance(cost, bool):
+                raise ValueError(f"Step {step.id} cost must be numeric, got {type(cost).__name__}")
+            if math.isnan(cost) or math.isinf(cost):
+                raise ValueError(f"Step {step.id} cost must be finite, got {cost}")
+            if cost < 0:
+                raise ValueError(f"Step {step.id} cost must be non-negative, got {cost}")
+            ctx.accumulated_cost += cost
             return
 
         # Failure: mark FAILED, then retry in-place if budget remains.

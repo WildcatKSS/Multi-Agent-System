@@ -1,11 +1,16 @@
 """Guardrails configuration."""
 
+import math
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
 class GuardrailsConfig:
     """Configuration for runtime guardrails enforcement.
+
+    All limits must come from trusted sources (environment variables, code, or
+    trusted configuration files). The configuration is designed to be instantiated
+    by system administrators or the framework itself, not from untrusted input.
 
     Attributes:
         max_cost: Maximum accumulated cost per run (default 100.0).
@@ -20,7 +25,18 @@ class GuardrailsConfig:
     max_plan_depth: int = 20
 
     def __post_init__(self) -> None:
-        """Validate all limits are positive."""
+        """Validate all limits are positive and finite.
+
+        Rejects NaN and infinity values to prevent silent guard bypasses.
+        These special float values are never intentional configuration values.
+        """
+        for name, value in [
+            ("max_cost", self.max_cost),
+            ("max_duration_seconds", self.max_duration_seconds),
+        ]:
+            if math.isnan(value) or math.isinf(value):
+                raise ValueError(f"{name} must be finite, got {value}")
+
         if self.max_cost <= 0:
             raise ValueError(f"max_cost must be positive, got {self.max_cost}")
         if self.max_duration_seconds <= 0:
