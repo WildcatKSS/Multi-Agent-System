@@ -17,10 +17,10 @@ for the full reference architecture.
 
 - **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
 - **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
-- **Milestone C — Reliability & Operations:** 🚧 In Progress (0/3 PRs)
+- **Milestone C — Reliability & Operations:** 🚧 In Progress (2/3 PRs)
 - **Milestone D — Validation & Documentation:** ⏳ Todo (0/2 PRs)
 
-### Completed (9 PRs):
+### Completed (12 PRs):
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
@@ -30,23 +30,28 @@ for the full reference architecture.
 - PR-07: Input Adapters v1 (Email/Calendar/Document/Transcript)
 - PR-08: Self-Healing Agent v1 (Retry/Fallback/Escalation)
 - PR-09: Evaluator Agent v1 (Rules + Heuristics + Threshold)
+- PR-10: Memory Layer v1 (Redis Working + Episodic Store)
+- PR-11: Guardrails Engine (Cost/TTL/Retries/Depth Limits)
+- PR-12: Observability Baseline (Logging/Metrics/Correlation IDs)
 
 **In Progress:**
-- PR-10: Memory Layer v1
+- PR-13: End-to-End MVP Scenario Pack
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## MVP Scope
 
-### In scope
+### In scope (all implemented)
 
-- Planning agent
-- Tool selection agent
-- Self-recovery agent
-- Evaluation agent
-- Single-worker runtime
-- Redis working memory + episodic memory
-- Basic guardrails (cost, TTL, retries, plan depth)
+- ✅ Planning agent (PR-05)
+- ✅ Tool selection agent (PR-06)
+- ✅ Self-recovery agent (PR-08)
+- ✅ Evaluation agent (PR-09)
+- ✅ Single-worker runtime (PR-04)
+- ✅ Redis working memory + episodic memory (PR-10)
+- ✅ Guardrails engine (cost, TTL, retries, plan depth) (PR-11)
+- ✅ Structured logging & metrics (PR-12)
+- ✅ Input adapters (email, calendar, document, transcript) (PR-07)
 
 ### Explicit non-goals
 
@@ -89,12 +94,44 @@ This means:
 ```
 .
 ├── docs/                            # roadmap + reference architecture
-├── src/mas/                         # Python library (agents, runtime, memory)
-│   ├── agents/                      # Agent implementations (future)
-│   ├── runtime/                     # Single-worker orchestration (future)
-│   ├── memory/                      # Redis + episodic memory (future)
+├── src/mas/                         # Python library (agents, runtime, memory, observability)
+│   ├── agents/                      # Agent implementations
+│   │   ├── planner.py               # Task planning & decomposition
+│   │   ├── tool_selector.py         # Tool selection logic
+│   │   ├── evaluator.py             # Plan evaluation (rules + heuristics)
+│   │   ├── self_healer.py           # Retry & recovery logic
+│   │   ├── recovery/                # Recovery patterns (failures, escalation)
+│   │   └── evaluation/              # Evaluation rules & heuristics
+│   ├── runtime/                     # Single-worker runtime orchestration
+│   │   ├── orchestrator.py          # Main execution loop with guardrails & metrics
+│   │   └── executor.py              # Step handler registry
+│   ├── guardrails/                  # Runtime enforcement (cost, TTL, retries, depth)
+│   │   ├── config.py                # Guardrail limits configuration
+│   │   ├── engine.py                # Guardrail validation logic
+│   │   └── violations.py            # Violation types & results
+│   ├── observability/               # Logging, metrics, correlation IDs
+│   │   ├── correlation.py           # Correlation context & run ID management
+│   │   ├── metrics.py               # ExecutionMetrics & collection
+│   │   └── logging_config.py        # Structured JSON logging
+│   ├── memory/                      # Redis working + episodic memory
+│   │   ├── working_memory.py        # Redis-backed ephemeral state
+│   │   ├── episodic_store.py        # Completed execution records
+│   │   └── memory_agent.py          # Memory orchestration
+│   ├── adapters/                    # Input type adapters
+│   │   └── input_dispatcher.py      # Route to task from email/calendar/doc/transcript
+│   ├── domain/                      # Domain contracts
+│   │   ├── task.py                  # Task definition
+│   │   ├── plan.py                  # Plan & Step contracts
+│   │   ├── evaluation.py            # Evaluation contracts
+│   │   └── annotation.py            # Metadata annotations
+│   ├── tools/                       # Tool registry & contracts
+│   │   ├── contract.py              # Tool interface
+│   │   └── registry.py              # Tool registration & lookup
+│   ├── workflow/                    # Workflow state machine
+│   │   ├── state.py                 # Workflow states & transitions
+│   │   └── policy.py                # State transition policy enforcement
 │   └── cli.py                       # CLI wrapper (optional, for convenience)
-├── tests/                           # pytest suite
+├── tests/                           # pytest suite (422 tests)
 ├── pyproject.toml                   # build config + dependencies
 └── README.md
 ```
