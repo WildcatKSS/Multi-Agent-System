@@ -5,10 +5,6 @@
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Release: 1.0.0](https://img.shields.io/badge/release-1.0.0-brightgreen?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System/releases/tag/v1.0.0)
 
-[![Tests: 450/450 Passing](https://img.shields.io/badge/tests-450%2F450%20passing-brightgreen?style=flat-square)](tests/)
-[![Code Quality: 10/10](https://img.shields.io/badge/quality-10%2F10-brightgreen?style=flat-square)](docs/architecture-decisions.md)
-[![Security: 0 Vulnerabilities](https://img.shields.io/badge/security-0%20vulnerabilities-brightgreen?style=flat-square)](#security)
-
 A generic, autonomous multi-agent system that independently analyzes tasks,
 generates plans, selects tools, recovers from errors, evaluates output, and
 learns from previous executions. The architecture is intentionally generic
