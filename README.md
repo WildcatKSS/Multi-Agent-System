@@ -40,6 +40,18 @@ for the full reference architecture.
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
+## Documentation
+
+### Core Documentation
+- **[Architecture Reference](docs/multi-agent-system-reference.md)** — Complete system design and architectural principles
+- **[Architecture Decision Records](docs/architecture-decisions.md)** — Key design decisions with rationale (10 ADRs)
+- **[E2E Scenario Guide](docs/e2e-scenarios.md)** — All 25 E2E test scenarios with examples
+
+### Operational Documentation
+- **[Production Readiness](docs/production-readiness.md)** — Deployment, monitoring, scaling, and incident response
+- **[Performance Tuning](docs/performance-tuning.md)** — Optimization techniques, profiling, and benchmarking
+- **[Roadmap](docs/roadmap.md)** — MVP slicing plan and PR dependency chain
+
 ## MVP Scope
 
 ### In scope (all implemented)
