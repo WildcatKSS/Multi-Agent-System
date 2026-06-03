@@ -8,19 +8,23 @@ from typing import Optional
 class ExecutionMetrics:
     """Metrics from a single execution run.
 
+    Captures comprehensive execution statistics including step outcomes,
+    cost accounting, timing, and guard violations for operational visibility
+    and performance analysis.
+
     Attributes:
-        run_id: Unique identifier for this run.
+        run_id: Unique identifier for this run (correlates with logs/traces).
         task_id: Task being executed.
         workflow_id: Workflow state machine ID.
         plan_id: Plan being executed.
         total_steps: Number of steps in the plan.
         completed_steps: Count of successfully completed steps.
-        failed_steps: Count of failed steps.
-        skipped_steps: Count of skipped steps.
+        failed_steps: Count of failed steps (did not succeed after retries).
+        skipped_steps: Count of skipped steps (never attempted due to dependency/guard).
         total_retries: Total retry attempts across all steps.
-        accumulated_cost: Total cost incurred during execution.
+        accumulated_cost: Total cost incurred during execution (sum of step costs).
         elapsed_seconds: Total wall-clock time in seconds.
-        succeeded: Whether the execution succeeded.
+        succeeded: Whether the execution succeeded (no failures or guards violated).
         guard_violation: Name of guard violation, if any (COST, TTL, RETRIES, PLAN_DEPTH).
     """
 
@@ -147,7 +151,10 @@ class MetricsCollector:
             ValueError: If cost is negative.
         """
         if cost < 0:
-            raise ValueError(f"cost must be non-negative, got {cost}")
+            raise ValueError(
+                f"cost must be non-negative, got {cost}. "
+                f"Step costs accumulate—ensure each step's cost value is >= 0.0"
+            )
         self.metrics.accumulated_cost += cost
 
     def set_start_time(self, timestamp: float) -> None:

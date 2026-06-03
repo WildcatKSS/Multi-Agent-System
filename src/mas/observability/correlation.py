@@ -15,10 +15,14 @@ _correlation_id_var: contextvars.ContextVar[Optional[str]] = contextvars.Context
 class CorrelationContext:
     """Execution context for distributed tracing.
 
+    Provides end-to-end tracing across multiple execution scopes by threading
+    a unique run ID alongside task and workflow identifiers. Used to correlate
+    logs, metrics, and debugging information across async execution boundaries.
+
     Attributes:
-        run_id: Unique identifier for this execution run.
-        task_id: Identifier of the task being executed.
-        workflow_id: Identifier of the workflow state machine.
+        run_id: Unique identifier for this execution run (8-char hex from UUID4).
+        task_id: Identifier of the task being executed (optional).
+        workflow_id: Identifier of the workflow state machine (optional).
     """
 
     run_id: str
@@ -28,7 +32,9 @@ class CorrelationContext:
     def __post_init__(self) -> None:
         """Validate context on creation."""
         if not self.run_id:
-            raise ValueError("run_id cannot be empty")
+            raise ValueError(
+                "run_id cannot be empty. Use generate_run_id() to create one."
+            )
 
 
 def generate_run_id() -> str:

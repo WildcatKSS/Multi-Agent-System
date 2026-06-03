@@ -12,6 +12,7 @@ class StructuredLogFormatter(logging.Formatter):
     """Formats log records as JSON for structured logging.
 
     Includes correlation ID (run_id) in all log records for distributed tracing.
+    Uses thread-safe contextvars to retrieve correlation IDs set during execution.
     """
 
     def format(self, record: logging.LogRecord) -> str:
@@ -30,7 +31,8 @@ class StructuredLogFormatter(logging.Formatter):
             "timestamp": self.formatTime(record, self.datefmt),
         }
 
-        # Add correlation ID (run_id) if available
+        # Add correlation ID (run_id) if available. Retrieved via contextvars
+        # for thread-safe/async-aware context isolation.
         correlation_id = get_correlation_id()
         if correlation_id:
             log_data["run_id"] = correlation_id

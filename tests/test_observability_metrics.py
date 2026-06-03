@@ -227,3 +227,31 @@ class TestMetricsCollector:
         assert metrics.elapsed_seconds == 10.0
         assert metrics.succeeded is False
         assert metrics.success_rate == 2 / 3
+
+    def test_collector_zero_elapsed_time(self) -> None:
+        """Metrics handles zero elapsed time (instant execution)."""
+        collector = MetricsCollector("run-1", task_id="task-1", workflow_id="", plan_id="")
+
+        collector.set_start_time(5.0)
+        collector.set_end_time(5.0)
+
+        assert collector.get_metrics().elapsed_seconds == 0.0
+
+    def test_collector_multiple_retries_same_step(self) -> None:
+        """Metrics accumulates multiple retry attempts correctly."""
+        collector = MetricsCollector("run-1", task_id="task-1", workflow_id="", plan_id="")
+
+        for _ in range(5):
+            collector.record_retry()
+
+        assert collector.get_metrics().total_retries == 5
+
+    def test_collector_large_cost_accumulation(self) -> None:
+        """Metrics handles large cost values without precision loss."""
+        collector = MetricsCollector("run-1", task_id="task-1", workflow_id="", plan_id="")
+
+        costs = [1000.5, 2000.75, 3000.25, 4000.0]
+        for cost in costs:
+            collector.add_cost(cost)
+
+        assert collector.get_metrics().accumulated_cost == sum(costs)
