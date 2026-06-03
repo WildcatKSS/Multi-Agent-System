@@ -147,6 +147,31 @@ class TestPlan:
         plan_empty = Plan(id="plan-1", task_id="task-1")
         assert not plan_empty.all_steps_completed()
 
+    def test_plan_validation_nan_cost(self) -> None:
+        """Plan creation fails with NaN estimated_cost."""
+        with pytest.raises(ValueError, match="estimated_cost must be finite"):
+            Plan(id="plan-1", task_id="task-1", estimated_cost=float('nan'))
+
+    def test_plan_validation_infinite_cost(self) -> None:
+        """Plan creation fails with infinite estimated_cost."""
+        with pytest.raises(ValueError, match="estimated_cost must be finite"):
+            Plan(id="plan-1", task_id="task-1", estimated_cost=float('inf'))
+
+    def test_plan_validation_negative_infinite_cost(self) -> None:
+        """Plan creation fails with negative infinite estimated_cost."""
+        with pytest.raises(ValueError, match="estimated_cost must be finite"):
+            Plan(id="plan-1", task_id="task-1", estimated_cost=float('-inf'))
+
+    def test_plan_validation_nan_time(self) -> None:
+        """Plan creation fails with NaN estimated_time_seconds."""
+        with pytest.raises(ValueError, match="estimated_time_seconds must be finite"):
+            Plan(id="plan-1", task_id="task-1", estimated_time_seconds=float('nan'))
+
+    def test_plan_validation_infinite_time(self) -> None:
+        """Plan creation fails with infinite estimated_time_seconds."""
+        with pytest.raises(ValueError, match="estimated_time_seconds must be finite"):
+            Plan(id="plan-1", task_id="task-1", estimated_time_seconds=float('inf'))
+
         steps = [
             Step(id="step-1", action="work", status=StepStatus.COMPLETED),
             Step(id="step-2", action="work", status=StepStatus.FAILED),

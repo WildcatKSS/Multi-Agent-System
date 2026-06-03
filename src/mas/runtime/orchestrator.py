@@ -12,14 +12,31 @@ Readiness / skip rules:
 - A step whose action has no registered handler is SKIPPED (no-op baseline).
 """
 
+import logging
+import math
+import time
 import uuid
 from dataclasses import dataclass, field
 
 from mas.domain.plan import Plan, Step, StepStatus
 from mas.domain.task import Task, TaskStatus
+from mas.guardrails import GuardrailsEngine
+from mas.guardrails.violations import GuardViolation
 from mas.runtime.executor import StepExecutorRegistry, StepResult
 from mas.workflow.policy import PolicyEngine
 from mas.workflow.state import WorkflowState
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class _RunContext:
+    """Mutable context tracking during a single runtime execution."""
+
+    start_time: float
+    accumulated_cost: float = 0.0
+    total_retries: int = 0
+    guard_violation: GuardViolation | None = None
 
 
 @dataclass
@@ -33,6 +50,7 @@ class RunResult:
     completed_steps: list[str] = field(default_factory=list)
     failed_steps: list[str] = field(default_factory=list)
     skipped_steps: list[str] = field(default_factory=list)
+    guard_violation: GuardViolation | None = None
 
 
 class Runtime:
@@ -42,10 +60,18 @@ class Runtime:
         self,
         policy: PolicyEngine | None = None,
         registry: StepExecutorRegistry | None = None,
+        guardrails: GuardrailsEngine | None = None,
     ) -> None:
-        """Initialize with an optional shared PolicyEngine and executor registry."""
+        """Initialize with an optional shared PolicyEngine, executor registry, and guardrails.
+
+        Args:
+            policy: PolicyEngine for workflow state management.
+            registry: StepExecutorRegistry for step handlers.
+            guardrails: GuardrailsEngine for runtime limits (optional; None = no enforcement).
+        """
         self.policy = policy or PolicyEngine()
         self.registry = registry or StepExecutorRegistry()
+        self.guardrails = guardrails
 
     def run(self, task: Task, plan: Plan) -> RunResult:
         """Execute the plan end-to-end, returning a RunResult."""
@@ -57,6 +83,17 @@ class Runtime:
                 succeeded=False,
             )
 
+        # 0b. Check guardrails on the plan (if enabled).
+        if self.guardrails:
+            result = self.guardrails.check_plan(plan)
+            if not result.passed:
+                return RunResult(
+                    task_id=task.id,
+                    final_state=WorkflowState.FAILED,
+                    succeeded=False,
+                    guard_violation=result.violation,
+                )
+
         # 1. Register workflow. A unique id per run keeps the same Task/Plan
         #    re-runnable on a shared PolicyEngine (create_workflow rejects dupes).
         workflow_id = f"{task.id}:{plan.id}:{uuid.uuid4().hex[:8]}"
@@ -66,9 +103,10 @@ class Runtime:
         task.status = TaskStatus.IN_PROGRESS
 
         # 2. Dependency-driven loop; workflow stays RUNNING throughout.
-        self._execute_steps(plan)
+        ctx = _RunContext(start_time=time.monotonic())
+        self._execute_steps(plan, ctx)
 
-        # 3. Terminal transition based on step outcomes.
+        # 3. Terminal transition based on step outcomes and guardrails violations.
         failed = plan.get_steps_by_status(StepStatus.FAILED)
         completed = plan.get_steps_by_status(StepStatus.COMPLETED)
         skipped = plan.get_steps_by_status(StepStatus.SKIPPED)
@@ -77,7 +115,14 @@ class Runtime:
             if s.status not in {StepStatus.COMPLETED, StepStatus.FAILED, StepStatus.SKIPPED}
         ]
 
-        succeeded = not failed and not unresolved
+        # If a guardrail was violated during execution, mark all unresolved steps as SKIPPED.
+        if ctx.guard_violation:
+            for step in unresolved:
+                step.status = StepStatus.SKIPPED
+            skipped.extend(unresolved)
+            unresolved = []
+
+        succeeded = not failed and not unresolved and not ctx.guard_violation
         if succeeded:
             self.policy.transition_workflow(
                 workflow_id, WorkflowState.COMPLETED, reason="all_steps_completed"
@@ -85,7 +130,12 @@ class Runtime:
             task.status = TaskStatus.COMPLETED
             final_state = WorkflowState.COMPLETED
         else:
-            reason = "step_failed" if failed else "unresolved_steps"
+            if ctx.guard_violation:
+                reason = f"guardrail_violated:{ctx.guard_violation.guard_type.value}"
+            elif failed:
+                reason = "step_failed"
+            else:
+                reason = "unresolved_steps"
             self.policy.transition_workflow(workflow_id, WorkflowState.FAILED, reason=reason)
             task.status = TaskStatus.FAILED
             final_state = WorkflowState.FAILED
@@ -98,15 +148,33 @@ class Runtime:
             completed_steps=[s.id for s in completed],
             failed_steps=[s.id for s in failed],
             skipped_steps=[s.id for s in skipped],
+            guard_violation=ctx.guard_violation,
         )
 
-    def _execute_steps(self, plan: Plan) -> None:
+    def _execute_steps(self, plan: Plan, ctx: _RunContext) -> None:
         """Run the dependency-driven scheduling loop until no progress is made."""
         by_id = {s.id: s for s in plan.steps}
 
         progress = True
         while progress:
             progress = False
+
+            # Check guardrails budget at the start of each iteration (if enabled).
+            if self.guardrails and not ctx.guard_violation:
+                elapsed = time.monotonic() - ctx.start_time
+                result = self.guardrails.check_budget(
+                    ctx.accumulated_cost, elapsed, ctx.total_retries
+                )
+                if not result.passed:
+                    ctx.guard_violation = result.violation
+                    logger.info(
+                        f"Guardrail violated ({result.violation.guard_type.value}): {result.violation.message}"
+                    )
+                    # Mark all non-terminal steps as SKIPPED.
+                    for step in plan.steps:
+                        if step.status in {StepStatus.PENDING, StepStatus.READY, StepStatus.EXECUTING}:
+                            step.status = StepStatus.SKIPPED
+                    break
 
             # Resolve readiness / skips for PENDING steps.
             for step in plan.steps:
@@ -124,10 +192,10 @@ class Runtime:
             for step in plan.steps:
                 if step.status != StepStatus.READY:
                     continue
-                self._run_step(step)
+                self._run_step(step, ctx)
                 progress = True
 
-    def _run_step(self, step: Step) -> None:
+    def _run_step(self, step: Step, ctx: _RunContext) -> None:
         """Execute one ready step, applying retry semantics on failure."""
         handler = self.registry.get(step.action)
         if handler is None:
@@ -142,10 +210,30 @@ class Runtime:
 
         if result.success:
             step.status = StepStatus.COMPLETED
+            # Validate and accumulate cost (defensive: reject NaN/inf/negative values).
+            cost = step.metadata.get("cost", 1.0)
+            if not isinstance(cost, (int, float)) or isinstance(cost, bool):
+                raise ValueError(
+                    f"Step {step.id} cost must be numeric, got {type(cost).__name__}. "
+                    f"Ensure step.metadata['cost'] is a float or int value."
+                )
+            if math.isnan(cost) or math.isinf(cost):
+                raise ValueError(
+                    f"Step {step.id} cost must be finite, got {cost}. "
+                    f"Ensure cost is a real number (not NaN or Infinity)."
+                )
+            if cost < 0:
+                raise ValueError(
+                    f"Step {step.id} cost must be non-negative, got {cost}. "
+                    f"Ensure cost is >= 0.0."
+                )
+            ctx.accumulated_cost += cost
+            logger.debug(f"Step {step.id} completed (cost={cost}, total={ctx.accumulated_cost})")
             return
 
         # Failure: mark FAILED, then retry in-place if budget remains.
         step.status = StepStatus.FAILED
         if step.can_retry():
             step.retry_count += 1
+            ctx.total_retries += 1
             step.status = StepStatus.PENDING
