@@ -7,7 +7,7 @@
 
 [![Tests: 450/450 Passing](https://img.shields.io/badge/tests-450%2F450%20passing-brightgreen?style=flat-square)](tests/)
 [![Code Quality: 10/10](https://img.shields.io/badge/quality-10%2F10-brightgreen?style=flat-square)](docs/architecture-decisions.md)
-[![Security: 0 Vulnerabilities](https://img.shields.io/badge/security-0%20vulnerabilities-brightgreen?style=flat-square)](SECURITY.md)
+[![Security: 0 Vulnerabilities](https://img.shields.io/badge/security-0%20vulnerabilities-brightgreen?style=flat-square)](#security)
 
 A generic, autonomous multi-agent system that independently analyzes tasks,
 generates plans, selects tools, recovers from errors, evaluates output, and
@@ -157,7 +157,6 @@ Key components:
 ### Community & Governance
 - **[Contributing Guide](CONTRIBUTING.md)** — How to contribute
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines
-- **[Security Policy](SECURITY.md)** — Reporting vulnerabilities
 - **[Changelog](CHANGELOG.md)** — Release history and breaking changes
 - **[Versioning Policy](VERSIONING.md)** — Semantic versioning guarantees
 
@@ -234,7 +233,6 @@ from mas.guardrails import GuardrailsEngine
 ├── CHANGELOG.md                     # Release history
 ├── CONTRIBUTING.md                  # Contribution guidelines
 ├── CODE_OF_CONDUCT.md               # Community guidelines
-├── SECURITY.md                      # Security policy
 ├── VERSIONING.md                    # Semantic versioning
 ├── Dockerfile                       # Container image
 ├── docker-compose.yml               # Example deployment
@@ -290,7 +288,7 @@ The following are deliberately **out of scope** for 1.0.0:
 **Status**: ✅ Production Ready  
 **Support Level**: 1.0.x receives security updates  
 
-[Full Release Notes](CHANGELOG.md) • [Upgrade Guide](MIGRATION.md)
+[Full Release Notes](CHANGELOG.md)
 
 ## Contributing
 
