@@ -1,5 +1,7 @@
 """Guardrails Engine: stateless enforcement of runtime limits."""
 
+import math
+
 from mas.domain.plan import Plan
 from mas.guardrails.config import GuardrailsConfig
 from mas.guardrails.violations import GuardResult, GuardType, GuardViolation
@@ -26,8 +28,8 @@ class GuardrailsEngine:
     def check_plan(self, plan: Plan) -> GuardResult:
         """Validate a plan before execution.
 
-        Checks plan depth and estimated cost against limits.
-        Returns the first violation found (plan_depth checked before cost).
+        Checks plan depth, finiteness of estimates, and estimated cost against limits.
+        Returns the first violation found (plan_depth → finite check → cost).
 
         Args:
             plan: Plan to validate.
@@ -35,6 +37,17 @@ class GuardrailsEngine:
         Returns:
             GuardResult with passed=True if no violations, False with violation details otherwise.
         """
+        # Defensive: Reject plans with NaN or infinite estimates (should not reach here due to Plan.__post_init__,
+        # but this provides additional security in case Plan is created via deserialization or other means).
+        if math.isnan(plan.estimated_cost) or math.isinf(plan.estimated_cost):
+            violation = GuardViolation(
+                guard_type=GuardType.COST,
+                message=f"Estimated cost must be finite, got {plan.estimated_cost}",
+                limit=self.config.max_cost,
+                actual=float('inf') if math.isinf(plan.estimated_cost) else 0.0,
+            )
+            return GuardResult(passed=False, violation=violation)
+
         # Check plan depth first
         plan_depth = len(plan.steps)
         if plan_depth > self.config.max_plan_depth:

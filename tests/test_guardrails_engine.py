@@ -204,3 +204,31 @@ class TestCheckBudget:
         result = engine.check_budget(accumulated_cost=50.0, elapsed_seconds=100.0, total_retries=3)
 
         assert result.passed is True
+
+
+class TestCheckPlanFiniteness:
+    """Verify plan estimates are finite."""
+
+    def test_plan_with_nan_cost_rejected(self) -> None:
+        """Plan with NaN estimated_cost is rejected."""
+        engine = GuardrailsEngine()
+        plan = _plan(step_count=1)
+        plan.estimated_cost = float('nan')
+
+        result = engine.check_plan(plan)
+
+        assert result.passed is False
+        assert result.violation.guard_type == GuardType.COST
+        assert "finite" in result.violation.message.lower()
+
+    def test_plan_with_infinite_cost_rejected(self) -> None:
+        """Plan with infinite estimated_cost is rejected."""
+        engine = GuardrailsEngine()
+        plan = _plan(step_count=1)
+        plan.estimated_cost = float('inf')
+
+        result = engine.check_plan(plan)
+
+        assert result.passed is False
+        assert result.violation.guard_type == GuardType.COST
+        assert "finite" in result.violation.message.lower()

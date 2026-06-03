@@ -1,5 +1,6 @@
 """Plan contract: execution plan for tasks."""
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -89,8 +90,16 @@ class Plan:
             raise ValueError("Plan id cannot be empty")
         if not self.task_id:
             raise ValueError("Plan task_id cannot be empty")
+
+        # Validate estimated_cost: must be non-negative and finite.
+        if math.isnan(self.estimated_cost) or math.isinf(self.estimated_cost):
+            raise ValueError(f"estimated_cost must be finite, got {self.estimated_cost}")
         if self.estimated_cost < 0:
             raise ValueError("estimated_cost cannot be negative")
+
+        # Validate estimated_time_seconds: must be non-negative and finite.
+        if math.isnan(self.estimated_time_seconds) or math.isinf(self.estimated_time_seconds):
+            raise ValueError(f"estimated_time_seconds must be finite, got {self.estimated_time_seconds}")
         if self.estimated_time_seconds < 0:
             raise ValueError("estimated_time_seconds cannot be negative")
 
