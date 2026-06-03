@@ -10,8 +10,6 @@ generates plans, selects tools, recovers from errors, evaluates output, and
 learns from previous executions. The architecture is intentionally generic
 and not tied to a specific use case.
 
-**Status**: ✅ Production Ready | **Version**: 1.0.0 | **MVP**: 100% Complete (14/14 PRs)
-
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Contributing](CONTRIBUTING.md) • [License](LICENSE)
 
 ## Contents
