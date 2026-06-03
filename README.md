@@ -18,25 +18,31 @@ for the full reference architecture.
 - **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
 - **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
 - **Milestone C — Reliability & Operations:** ✅ Complete (3/3 PRs)
-- **Milestone D — Validation & Documentation:** 🚧 In Progress (1/2 PRs)
+- **Milestone D — Validation & Documentation:** ✅ Complete (2/2 PRs)
 
-### Completed (13 PRs):
+### Completed (14/14 PRs) — MVP COMPLETE ✅
+
+**Milestone A — Foundations (4/4):**
 - PR-01: Project Bootstrap & Repository Foundations
 - PR-02: Workflow State Machine & Policy Layer
 - PR-03: Core Domain Contracts
 - PR-04: Single-Worker Runtime Orchestrator (Baseline)
+
+**Milestone B — Core Agents (5/5):**
 - PR-05: Planner Agent v1
 - PR-06: Tool Selection Agent v1 + Tool Registry
 - PR-07: Input Adapters v1 (Email/Calendar/Document/Transcript)
 - PR-08: Self-Healing Agent v1 (Retry/Fallback/Escalation)
 - PR-09: Evaluator Agent v1 (Rules + Heuristics + Threshold)
+
+**Milestone C — Reliability & Operations (3/3):**
 - PR-10: Memory Layer v1 (Redis Working + Episodic Store)
 - PR-11: Guardrails Engine (Cost/TTL/Retries/Depth Limits)
 - PR-12: Observability Baseline (Logging/Metrics/Correlation IDs)
-- PR-13: End-to-End MVP Scenario Pack (25 E2E Tests)
 
-**In Review:**
-- PR-14: Documentation & Architecture Decision Records ([#38](https://github.com/WildcatKSS/Multi-Agent-System/pull/38))
+**Milestone D — Validation & Documentation (2/2):**
+- PR-13: End-to-End MVP Scenario Pack (25 E2E Tests)
+- PR-14: Documentation & Architecture Decision Records
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
