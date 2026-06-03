@@ -188,7 +188,3 @@ src/mas/
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
-
----
-
-Built with ❤️ by the Multi-Agent System team
