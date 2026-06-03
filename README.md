@@ -5,32 +5,23 @@
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Release: 1.0.0](https://img.shields.io/badge/release-1.0.0-brightgreen?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System/releases/tag/v1.0.0)
 
-A generic, autonomous multi-agent system that independently analyzes tasks,
-generates plans, selects tools, recovers from errors, evaluates output, and
-learns from previous executions. The architecture is intentionally generic
-and not tied to a specific use case.
+A generic, autonomous multi-agent system that independently analyzes tasks, generates plans, selects tools, recovers from errors, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Contributing](CONTRIBUTING.md) • [License](LICENSE)
 
-## Contents
-
-- [Quick Start](#quick-start)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Documentation](#documentation)
-- [Testing](#testing)
-- [Performance](#performance)
-- [Architecture](#architecture)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Quick Start
 
-### Installation
+### Install
 
 ```bash
 pip install mas
+```
+
+Or from source:
+```bash
+git clone https://github.com/WildcatKSS/Multi-Agent-System.git
+cd Multi-Agent-System
+./install.sh
 ```
 
 ### Basic Usage
@@ -42,11 +33,7 @@ from mas.runtime.orchestrator import Runtime
 from mas.runtime.executor import StepExecutorRegistry, StepResult
 
 # Create a task
-task = Task(
-    id="task-1",
-    description="Process data",
-    goal="Complete successfully"
-)
+task = Task(id="task-1", description="Process data", goal="Complete")
 
 # Create a plan
 plan = Plan(
@@ -54,146 +41,111 @@ plan = Plan(
     task_id="task-1",
     steps=[Step(id="step-1", action="process", inputs={})],
     estimated_cost=1.0,
-    estimated_time_seconds=10.0,
-    reasoning="Linear execution plan"
+    estimated_time_seconds=10.0
 )
 
-# Register step handlers
+# Register handlers and run
 registry = StepExecutorRegistry()
 registry.register("process", lambda step: StepResult(success=True))
 
-# Execute the plan
 runtime = Runtime(registry=registry)
 result = runtime.run(task, plan)
 
 print(f"Success: {result.succeeded}")
-print(f"Steps completed: {len(result.completed_steps)}")
-print(f"Metrics: {result.metrics.to_dict()}")
 ```
 
 ## Features
 
 ✅ **Production-Ready MVP**
-- Single-worker runtime orchestration
-- 4 core agents (Planner, Tool Selection, Self-Healing, Evaluator)
-- 4 input adapters (Email, Calendar, Document, Transcript)
-- Runtime guardrails (Cost, TTL, Retries, Depth)
+- Single-worker runtime orchestration with dependency resolution
+- 4 core agents: Planner, Tool Selection, Self-Healing, Evaluator
+- 4 input adapters: Email, Calendar, Document, Transcript
+- Runtime guardrails: Cost, TTL, Retries, Plan Depth
 
 ✅ **Reliability & Operations**
-- Memory layer (Working + Episodic)
-- Observability (Correlation IDs, Metrics, Logging)
+- Memory layer with working memory and episodic store
+- Structured observability: correlation IDs, JSON logging, metrics
 - Error recovery with retries and fallbacks
-- Distributed tracing via correlation IDs
+- Thread-safe execution via contextvars
 
 ✅ **Quality & Testing**
-- 450 comprehensive tests (100% passing)
-- 10/10 code quality score on all dimensions
+- 450 comprehensive tests (100% passing, ~0.5s execution)
+- Type-safe with full Python 3.12+ type hints
 - 0 security vulnerabilities
-- Production deployment guide included
-- End-to-end scenario pack with 25 realistic scenarios
+- 10 Architecture Decision Records
 
 ✅ **Well-Documented**
-- Architecture Decision Records (10 ADRs)
-- Production readiness guide
-- Performance tuning guide
-- Security policy and incident response
+- API reference and architecture guides
+- Production readiness documentation
+- Performance tuning and benchmarks
+- E2E scenarios with 25 realistic examples
 
-## Installation
+## Installation Options
 
-### From PyPI (Recommended)
-
+**PyPI** (recommended):
 ```bash
 pip install mas
 ```
 
-### From Source
-
-```bash
-git clone https://github.com/WildcatKSS/Multi-Agent-System.git
-cd Multi-Agent-System
-./install.sh
-source venv/bin/activate
-```
-
-### Docker
-
+**Docker**:
 ```bash
 docker build -t mas:1.0.0 .
-docker run -e LOG_LEVEL=INFO mas:1.0.0
+docker-compose up -d
 ```
 
-**Requirements**: Python 3.12+ | **Optional**: Redis 7+
-
-## Usage
-
-Detailed usage examples are available in [docs/e2e-scenarios.md](docs/e2e-scenarios.md).
-
-Key components:
-- **Planner**: Decomposes tasks into steps
-- **Tool Selector**: Maps steps to registered handlers
-- **Runtime**: Orchestrates execution with guardrails
-- **Evaluator**: Scores execution quality
-- **Self-Healer**: Recovers from failures via retries
+**Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for advanced memory features)
 
 ## Documentation
 
-### Core Documentation
-- **[API Reference](src/mas/README.md)** — Complete API documentation
-- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and principles
-- **[Architecture Decision Records](docs/architecture-decisions.md)** — 10 ADRs explaining design choices
+### Core
+- **[API Reference](src/mas/README.md)** — Complete module documentation
+- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and patterns
+- **[Architecture Decisions](docs/architecture-decisions.md)** — 10 ADRs explaining design choices
 
-### Operational Documentation
-- **[Production Readiness](docs/production-readiness.md)** — Deployment, monitoring, and SLAs
-- **[Performance Guide](docs/performance-tuning.md)** — Benchmarks and optimization
-- **[E2E Scenarios](docs/e2e-scenarios.md)** — 25 test scenarios with examples
-- **[Roadmap](docs/roadmap.md)** — MVP slicing and dependency chain
+### Operational
+- **[Performance Tuning](docs/performance-tuning.md)** — Benchmarks and optimization strategies
+- **[E2E Scenarios](docs/e2e-scenarios.md)** — 25 realistic usage examples
+- **[Production Readiness](docs/production-readiness.md)** — Deployment and monitoring
+- **[Roadmap](docs/roadmap.md)** — Feature roadmap and milestones
 
-### Community & Governance
-- **[Contributing Guide](CONTRIBUTING.md)** — How to contribute
-- **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines
-- **[Changelog](CHANGELOG.md)** — Release history and breaking changes
-- **[Versioning Policy](VERSIONING.md)** — Semantic versioning guarantees
+### Governance
+- **[Contributing](CONTRIBUTING.md)** — How to contribute
+- **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community standards
+- **[Changelog](CHANGELOG.md)** — Release history
+- **[Versioning](VERSIONING.md)** — SemVer 2.0.0 policy
 
 ## Testing
-
-Run the complete test suite:
 
 ```bash
 source venv/bin/activate
 pytest -v
 ```
 
-**Test Coverage**: 450 tests
+**Coverage**: 450 tests
 - Unit tests: 200+
 - Integration tests: 150+
 - E2E scenarios: 25+
 - Guardrail tests: 50+
 - Recovery tests: 25+
 
-**Results**:
-- Pass Rate: 100% (450/450)
-- Execution Time: ~0.5 seconds
-- Flakiness: 0% (deterministic)
+**Results**: 100% pass rate, ~0.5s total execution, 0% flakiness
 
 ## Performance
 
-**Baseline Metrics**:
-- 3-step plan: ~0.15ms
-- 10-step plan: ~0.5ms
-- 25-step plan: ~2ms
-- 100-step plan: ~8ms
+| Plan Size | Time    |
+|-----------|---------|
+| 3 steps   | ~0.15ms |
+| 10 steps  | ~0.5ms  |
+| 25 steps  | ~2ms    |
+| 100 steps | ~8ms    |
 
-**Memory Usage**:
-- Base runtime: ~50MB
-- Per 1000 episodic records: +10MB
-- Working memory (1000 items): +5MB
+**Memory**: Base runtime ~50MB + episodic store (~10MB per 1000 records)
 
-[Full Performance Guide](docs/performance-tuning.md)
+See [Performance Tuning](docs/performance-tuning.md) for detailed benchmarks.
 
 ## Architecture
 
-**Library-first design**: `mas` is a reusable library with optional CLI wrapper.
-Agent implementations live in `src/mas/` and are intended for direct import:
+**Library-first design** — `mas` is a reusable Python library with optional CLI wrapper.
 
 ```python
 from mas.agents import Planner
@@ -201,104 +153,41 @@ from mas.runtime.orchestrator import Runtime
 from mas.guardrails import GuardrailsEngine
 ```
 
-### Repository Layout
+### Key Modules
 
 ```
-.
-├── docs/                            # Guides and architecture
-│   ├── multi-agent-system-reference.md
-│   ├── architecture-decisions.md    # 10 ADRs
-│   ├── production-readiness.md
-│   ├── performance-tuning.md
-│   ├── e2e-scenarios.md
-│   └── roadmap.md
-├── src/mas/                         # Library (agents, runtime, memory)
-│   ├── agents/                      # Planner, Tool Selection, Evaluator, Self-Healer
-│   ├── runtime/                     # Orchestrator + Executor Registry
-│   ├── guardrails/                  # Cost, TTL, Retries, Depth enforcement
-│   ├── observability/               # Logging, Metrics, Correlation IDs
-│   ├── memory/                      # Working + Episodic memory
-│   ├── adapters/                    # Email, Calendar, Document, Transcript
-│   ├── domain/                      # Task, Plan, Step contracts
-│   ├── tools/                       # Tool registry
-│   ├── workflow/                    # State machine + Policy engine
-│   └── cli.py                       # CLI wrapper
-├── tests/                           # 450 comprehensive tests
-├── CHANGELOG.md                     # Release history
-├── CONTRIBUTING.md                  # Contribution guidelines
-├── CODE_OF_CONDUCT.md               # Community guidelines
-├── VERSIONING.md                    # Semantic versioning
-├── Dockerfile                       # Container image
-├── docker-compose.yml               # Example deployment
-├── LICENSE                          # MIT License
-└── README.md                        # This file
+src/mas/
+├── agents/           # Planner, Tool Selection, Evaluator, Self-Healer
+├── runtime/          # Orchestrator + Executor Registry
+├── guardrails/       # Cost, TTL, Retries, Depth enforcement
+├── observability/    # Logging, Metrics, Correlation IDs
+├── memory/           # Working + Episodic memory stores
+├── adapters/         # Email, Calendar, Document, Transcript inputs
+├── domain/           # Task, Plan, Step contracts
+├── tools/            # Tool registry
+└── workflow/         # State machine + Policy engine
 ```
 
-## Architectural Principles
+### Design Principles
 
-1. **Stability before intelligence** — Correct operation > sophisticated behavior
-2. **Observability before optimization** — Measure + trace > premature optimization
-3. **No hidden orchestration** — Explicit dependencies + clear execution flow
-4. **No implicit state mutations** — All state changes are logged and auditable
-5. **Small iterative extensions** — Composition over large refactors
-6. **Every agent must remain explainable** — Decisions are traceable
-7. **Evaluation determines quality** — Metrics drive improvements
-8. **Distributed systems only when needed** — Single-worker baseline first
-
-## MVP Status
-
-### Milestones
-
-- **Milestone A — Foundations:** ✅ Complete (4/4 PRs)
-- **Milestone B — Core Agents:** ✅ Complete (5/5 PRs)
-- **Milestone C — Reliability & Operations:** ✅ Complete (3/3 PRs)
-- **Milestone D — Validation & Documentation:** ✅ Complete (2/2 PRs)
-
-### Completed (14/14 PRs)
-
-All MVP features implemented and tested:
-- Single-worker runtime ✅
-- 4 core agents ✅
-- 4 input adapters ✅
-- Guardrails enforcement ✅
-- Memory layer ✅
-- Observability baseline ✅
-- 450 comprehensive tests ✅
-- Complete documentation ✅
-
-### Out of Scope (Intentionally)
-
-The following are deliberately **out of scope** for 1.0.0:
-- Distributed runtime (Milestone E)
-- Event sourcing
-- Reward modeling
-- Fine-tuning
-- Multi-worker orchestration
+1. **Stability before intelligence** — Correct > sophisticated
+2. **Observability before optimization** — Measure > premature optimization
+3. **No hidden orchestration** — Explicit dependencies
+4. **No implicit mutations** — All changes are logged
+5. **Composition over refactors** — Small iterations preferred
+6. **Explainability** — Every decision is traceable
+7. **Metrics drive quality** — Evaluation determines improvements
+8. **Single-worker baseline** — Distributed when needed
 
 ## Release Information
 
-**Current Version**: 1.0.0  
-**Release Date**: 2026-06-03  
-**Status**: ✅ Production Ready  
-**Support Level**: 1.0.x receives security updates  
+**Version**: 1.0.0 | **Released**: 2026-06-03 | **Status**: Production Ready
 
-[Full Release Notes](CHANGELOG.md)
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## Code of Conduct
-
-This project adheres to the Contributor Covenant. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
-## Security
-
-For security issues, please see [SECURITY.md](SECURITY.md) for responsible disclosure.
+[Changelog](CHANGELOG.md) • [Contributing](CONTRIBUTING.md)
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
