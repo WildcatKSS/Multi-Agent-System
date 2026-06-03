@@ -14,7 +14,7 @@ Security updates for version 1.0.x will be released as 1.0.z patch versions and 
 **Do not open public issues for security vulnerabilities.** Instead, please follow this process:
 
 ### Step 1: Report Responsibly
-Email the maintainers at: **[security contact information]**
+Use GitHub's private vulnerability disclosure: https://github.com/WildcatKSS/Multi-Agent-System/security/advisories
 
 Include:
 - Description of the vulnerability
