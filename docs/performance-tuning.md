@@ -55,12 +55,6 @@ class CachedStepExecutor:
         
         self.cache[cache_key] = result
         return result
-    
-    def _make_key(self, step: Step) -> str:
-        """Create cache key from step."""
-        import hashlib
-        content = f"{step.action}:{step.inputs}"
-        return hashlib.sha256(content.encode()).hexdigest()
 ```
 
 ### 2. Lazy Dependency Graph Computation
@@ -80,13 +74,6 @@ class LazyPlan(Plan):
         if self._computed_graph is None:
             self._computed_graph = self._build_graph()
         return self._computed_graph.get(step_id, [])
-    
-    def _build_graph(self) -> dict:
-        """Build dependency graph once."""
-        graph = {}
-        for step in self.steps:
-            graph[step.id] = step.depends_on
-        return graph
 ```
 
 ### 3. Metrics Batch Aggregation
@@ -106,21 +93,6 @@ class BatchedMetricsCollector:
         self.buffer.append(metric)
         if len(self.buffer) >= self.batch_size:
             self.flush()
-    
-    def flush(self) -> None:
-        """Flush buffer to storage."""
-        if not self.buffer:
-            return
-        
-        # Aggregate similar metrics
-        aggregated = self._aggregate()
-        episodic_store.store_batch(aggregated)
-        self.buffer.clear()
-    
-    def _aggregate(self) -> list[dict]:
-        """Aggregate buffer metrics."""
-        # Group by task type, compute averages
-        pass
 ```
 
 ### 4. Connection Pooling for Redis
@@ -138,14 +110,6 @@ class RedisConnectionManager:
             decode_responses=True,
         )
         self.client = Redis(connection_pool=self.pool)
-    
-    def get_connection(self):
-        """Get connection from pool."""
-        return self.client
-    
-    def close(self):
-        """Close pool."""
-        self.pool.disconnect()
 ```
 
 ### 5. Query Result Caching in Episodic Store
@@ -170,11 +134,6 @@ class CachedEpisodicStore:
         self.cache[task_id] = results
         self.timestamps[task_id] = time.time()
         return results
-    
-    def invalidate(self, task_id: str) -> None:
-        """Invalidate cache for task."""
-        self.cache.pop(task_id, None)
-        self.timestamps.pop(task_id, None)
 ```
 
 ---
@@ -204,10 +163,6 @@ def profile_step_execution(func):
             )
         return result
     return wrapper
-
-@profile_step_execution
-def my_handler(step: Step) -> StepResult:
-    return StepResult(success=True)
 ```
 
 ### Memory Profiling
@@ -222,29 +177,6 @@ def execute_large_plan(plan: Plan):
     for step in plan.steps:
         handler = registry.get(step.action)
         result = handler(step)
-```
-
-### Execution Tracing
-
-```python
-import cProfile
-import pstats
-from io import StringIO
-
-def trace_execution(task: Task, plan: Plan):
-    """Profile complete execution."""
-    profiler = cProfile.Profile()
-    profiler.enable()
-    
-    try:
-        runtime.run(task, plan)
-    finally:
-        profiler.disable()
-        
-        # Print stats
-        stats = pstats.Stats(profiler, stream=StringIO())
-        stats.sort_stats('cumulative')
-        stats.print_stats(20)  # Top 20 functions
 ```
 
 ---
@@ -271,78 +203,6 @@ def test_large_plan_performance():
     print(f"100-step plan: {elapsed:.3f}s")
     assert elapsed < 1.0  # Should complete in <1s
 ```
-
-### Scenario 2: Burst Task Submission
-
-```python
-async def test_burst_submission():
-    """Test burst submission of 100 tasks."""
-    tasks = [TaskBuilder().with_id(f"task-{i}").build() for i in range(100)]
-    plans = [generate_linear_plan(t.id, step_count=5) for t in tasks]
-    
-    runtime = Runtime(registry=registry)
-    
-    start = time.perf_counter()
-    results = await asyncio.gather(
-        *[runtime.run(t, p) for t, p in zip(tasks, plans)]
-    )
-    elapsed = time.perf_counter() - start
-    
-    print(f"100 tasks in burst: {elapsed:.3f}s")
-    assert len([r for r in results if r.succeeded]) > 95  # 95%+ success
-```
-
-### Scenario 3: Memory Pressure
-
-```python
-def test_episodic_store_at_scale():
-    """Test with 10k episodic records."""
-    store = InMemoryEpisodicStore()
-    
-    for i in range(10000):
-        metrics = ExecutionMetrics(
-            run_id=f"run-{i}",
-            task_id=f"task-{i % 100}",
-            workflow_id=f"wf-{i}",
-            plan_id=f"plan-{i}",
-            completed_steps=5,
-            succeeded=True,
-        )
-        store.store(metrics)
-    
-    # Query performance should still be fast
-    start = time.perf_counter()
-    results = store.query_by_task("task-0")
-    elapsed = time.perf_counter() - start
-    
-    print(f"Query 10k records: {elapsed:.3f}s")
-    assert elapsed < 0.1  # <100ms
-```
-
----
-
-## Optimization Checklist
-
-### Development
-- [ ] Profile hot paths with cProfile
-- [ ] Measure memory with memory_profiler
-- [ ] Identify bottlenecks
-- [ ] Implement targeted optimizations
-- [ ] Verify improvements with benchmarks
-
-### Production
-- [ ] Monitor execution duration percentiles
-- [ ] Track memory usage over time
-- [ ] Measure guard enforcement overhead
-- [ ] Monitor cache hit rates
-- [ ] Analyze slowest steps
-
-### Continuous
-- [ ] Review metrics monthly
-- [ ] Identify performance degradation
-- [ ] Plan optimization sprints
-- [ ] Share findings with team
-- [ ] Document best practices
 
 ---
 
@@ -382,5 +242,3 @@ Average          1.09ms (50% faster)
 3. **JIT Compilation**: PyPy or Numba for hot paths
 4. **Distributed Execution**: Multi-worker with task queue
 5. **Smart Caching**: ML-based prediction of execution outcomes
-6. **Plan Optimization**: Reorder steps to minimize cost/time
-7. **Resource Pooling**: Singleton handlers for expensive operations

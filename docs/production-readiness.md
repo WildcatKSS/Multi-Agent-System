@@ -10,7 +10,7 @@ This guide provides everything needed to deploy and operate the Multi-Agent Syst
 - [x] 450 tests passing (100%)
 - [x] Type hints complete (mypy ready)
 - [x] No HIGH/MEDIUM security vulnerabilities
-- [x] Code review approved (9.5/10 quality)
+- [x] Code review approved (10/10 quality)
 - [x] Docstrings on all public APIs
 - [x] No hardcoded secrets/credentials
 
@@ -286,131 +286,6 @@ cp /backups/mas-episodic-20260603.rdb /var/lib/redis/dump.rdb
 redis-server
 ```
 
-**Working Memory Reset:**
-```python
-def reset_working_memory():
-    """Clear working memory (careful!)."""
-    working_memory.clear()
-    logger.warning("Working memory cleared")
-```
-
----
-
-## Performance Tuning
-
-### Step Execution Optimization
-
-```python
-# Increase concurrent step handlers (future)
-executor_config = ExecutorConfig(
-    max_concurrent_steps=4,
-    timeout_seconds=300,
-    retry_backoff_seconds=5,
-)
-
-# Batch metrics collection
-metrics_collector.set_batch_size(100)
-
-# Lazy dependency graph computation
-plan.compute_dependencies_lazily()
-```
-
-### Memory Optimization
-
-```python
-# Configure episodic store retention
-episodic_store.set_retention(
-    max_records=10000,
-    max_age_seconds=604800,  # 7 days
-)
-
-# Periodic cleanup
-asyncio.create_task(
-    episodic_store.cleanup_expired()
-)
-```
-
-### Cost Optimization
-
-```python
-# Adjust default step costs
-planner.set_default_step_cost(0.5)
-
-# Cache frequently-used tool calls
-execution_cache = StepResultCache(max_size=1000)
-
-# Batch-process related tasks
-batch_executor = TaskBatchExecutor(batch_size=10)
-```
-
----
-
-## Scaling Considerations
-
-### Horizontal Scaling (Future)
-
-For scaling to multiple workers (Milestone E):
-1. Add distributed task queue (Celery, RQ)
-2. Implement distributed locking for shared state
-3. Add worker health checks
-4. Implement dynamic worker scaling
-
-### Vertical Scaling (Current)
-
-For increasing single-worker capacity:
-1. Increase executor timeout limits
-2. Increase Redis memory allocation
-3. Adjust CPU/memory quotas
-4. Optimize hot paths with profiling
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: Guard violations are too frequent
-```
-Solution:
-1. Review step costs (may be overestimated)
-2. Adjust guardrail limits in config
-3. Optimize plan decomposition
-4. Check for slow handlers
-```
-
-**Issue**: Memory usage growing unbounded
-```
-Solution:
-1. Configure episodic store retention
-2. Disable metrics if not needed
-3. Clear working memory periodically
-4. Monitor Redis memory usage
-```
-
-**Issue**: High execution failures
-```
-Solution:
-1. Check handler implementations
-2. Review step dependencies
-3. Increase max_retries for flaky steps
-4. Add fallback handlers
-```
-
-### Debug Logging
-
-Enable debug logs for troubleshooting:
-```bash
-export LOG_LEVEL=DEBUG
-python -m mas
-```
-
-Debug output includes:
-- Step execution details
-- Dependency resolution trace
-- Guardrail check results
-- Handler performance metrics
-- Memory operations
-
 ---
 
 ## SLA/SLO Definitions
@@ -438,7 +313,7 @@ Available downtime: 3 hours 36 minutes per month
 
 ### Escalation Procedure
 
-1. **Detection** → Alert triggered (threshold exceeded)
+1. **Detection** → Alert triggered
 2. **Assessment** → Check health dashboard
 3. **Triage** → Determine severity (P1/P2/P3)
 4. **Mitigation** → Apply temporary fix
@@ -454,36 +329,7 @@ docker run -e VERSION=1.0.0 mas:latest
 
 # Or via Kubernetes
 kubectl rollout undo deployment/mas
-
-# Verify rollback
-kubectl get deployment mas -o jsonpath='{.status.conditions[?(@.type=="Progressing")]}'
 ```
-
----
-
-## Compliance & Security
-
-### Security Best Practices
-
-- [ ] Run as non-root user
-- [ ] Use secrets management (Vault, K8s secrets)
-- [ ] Enable TLS for Redis connections
-- [ ] Audit log all executions
-- [ ] Rate-limit task submissions
-- [ ] Validate task descriptions (no secrets)
-- [ ] Encrypt episodic store at rest
-- [ ] Regular security updates
-
-### Compliance Checklist
-
-- [ ] Data retention policy (episodic records)
-- [ ] User access controls
-- [ ] Execution audit trail
-- [ ] Encryption in transit
-- [ ] Backup and recovery testing
-- [ ] Incident response playbook
-- [ ] Regular penetration testing
-- [ ] Compliance certifications (SOC2, etc.)
 
 ---
 
@@ -494,6 +340,5 @@ kubectl get deployment mas -o jsonpath='{.status.conditions[?(@.type=="Progressi
 3. **Monitor** for 1-2 weeks
 4. **Optimize** based on metrics
 5. **Deploy** to production
-6. **Maintain** with regular updates
 
 **Estimated time to production**: 2-4 weeks

@@ -24,15 +24,6 @@ Implement single-threaded, synchronous execution with explicit dependency-driven
 - ⚠️ Cannot parallelize independent steps (future optimization)
 - ⚠️ Blocking handlers will block entire execution (design constraint)
 
-### Alternatives Considered
-- **Async/await**: More complex, harder to debug, similar performance for MVP
-- **Multi-process**: Heavy overhead, complex state synchronization
-- **Distributed**: Out of scope for MVP, added in Milestone E
-
-### References
-- See `src/mas/runtime/orchestrator.py` for implementation
-- Dependency resolution in `_execute_steps()`
-
 ---
 
 ## ADR-002: Dependency Injection for Core Components
@@ -41,7 +32,7 @@ Implement single-threaded, synchronous execution with explicit dependency-driven
 ACCEPTED
 
 ### Context
-The runtime needs to be flexible, testable, and support multiple implementations (e.g., different memory backends).
+The runtime needs to be flexible, testable, and support multiple implementations.
 
 ### Decision
 Use constructor-based dependency injection for PolicyEngine, StepExecutorRegistry, and GuardrailsEngine.
@@ -56,25 +47,6 @@ Use constructor-based dependency injection for PolicyEngine, StepExecutorRegistr
 - ✅ Fully testable
 - ✅ Supports multiple configurations
 - ⚠️ Requires boilerplate in calling code
-- ⚠️ Potential for injection misconfigurations
-
-### Implementation
-```python
-class Runtime:
-    def __init__(
-        self,
-        policy: PolicyEngine | None = None,
-        registry: StepExecutorRegistry | None = None,
-        guardrails: GuardrailsEngine | None = None,
-    ):
-        self.policy = policy or PolicyEngine()
-        self.registry = registry or StepExecutorRegistry()
-        self.guardrails = guardrails
-```
-
-### References
-- `src/mas/runtime/orchestrator.py` lines 62-77
-- All test files use DI for test setup
 
 ---
 
@@ -84,7 +56,7 @@ class Runtime:
 ACCEPTED
 
 ### Context
-Domain objects (Task, Plan, Step) represent the problem being solved and shouldn't be modified during execution.
+Domain objects represent the problem being solved and shouldn't be modified during execution.
 
 ### Decision
 Use frozen dataclasses for all domain contracts with defensive copying on input.
@@ -98,22 +70,7 @@ Use frozen dataclasses for all domain contracts with defensive copying on input.
 ### Consequences
 - ✅ Type-safe, no side effects
 - ✅ Thread-safe by default
-- ⚠️ Cannot directly modify step status (use Plan.get_steps_by_status())
-- ⚠️ Small performance overhead for copying
-
-### Implementation
-```python
-@dataclass(frozen=True)
-class Task:
-    id: str
-    description: str
-    goal: str
-```
-
-### References
-- `src/mas/domain/task.py`
-- `src/mas/domain/plan.py`
-- Note: Step.status IS mutable (design decision for execution tracking)
+- ⚠️ Cannot directly modify step status
 
 ---
 
@@ -139,26 +96,6 @@ Use UUID4-based correlation IDs (8-char hex) with contextvars for thread-safe pr
 - ✅ Works with async/threading
 - ✅ Enables distributed tracing (future)
 - ⚠️ Requires context reset between tests
-- ⚠️ UUID4 is unguessable (good for security)
-
-### Implementation
-```python
-from contextvars import ContextVar
-
-_correlation_context: ContextVar[CorrelationContext | None] = ContextVar(
-    'correlation_context',
-    default=None
-)
-
-def set_correlation_id(run_id: str, ...) -> CorrelationContext:
-    ctx = CorrelationContext(...)
-    _correlation_context.set(ctx)
-    return ctx
-```
-
-### References
-- `src/mas/observability/correlation.py`
-- Test cleanup in `tests/test_e2e_scenarios.py`
 
 ---
 
@@ -184,19 +121,6 @@ Make Redis optional with in-memory store as default, configurable at runtime.
 - ✅ Easier local development
 - ✅ Flexibility for testing
 - ⚠️ In-memory store is not persistent
-- ⚠️ Memory usage scales with record count
-
-### Implementation
-```python
-if redis_url:
-    store = RedisEpisodicStore(redis_url)
-else:
-    store = InMemoryEpisodicStore()
-```
-
-### References
-- `src/mas/memory/episodic_store.py`
-- `src/mas/memory/__init__.py`
 
 ---
 
@@ -222,25 +146,6 @@ Use frozen dataclasses with `__post_init__` validation for all metrics.
 - ✅ Catch errors early
 - ✅ Serializable to JSON/storage
 - ⚠️ Cannot modify metrics after creation
-- ⚠️ Validation overhead minimal
-
-### Implementation
-```python
-@dataclass(frozen=True)
-class ExecutionMetrics:
-    run_id: str
-    ...
-    
-    def __post_init__(self) -> None:
-        if not self.run_id:
-            raise ValueError("run_id cannot be empty")
-        if self.elapsed_seconds < 0:
-            raise ValueError(f"elapsed_seconds cannot be negative")
-```
-
-### References
-- `src/mas/observability/metrics.py`
-- `src/mas/guardrails/config.py`
 
 ---
 
@@ -265,20 +170,7 @@ Implement four independent guards (cost, TTL, retries, plan depth) checked at sp
 - ✅ Predictable behavior
 - ✅ Prevents resource exhaustion
 - ✅ Clear violation messages
-- ⚠️ Four separate checks (minimal overhead)
-- ⚠️ Guard limits are conservative by default
-
-### Guard Execution Points
-| Guard | Checked | Impact |
-|-------|---------|--------|
-| Plan Depth | Pre-execution | Rejects plan immediately |
-| Cost | Pre-execution + during loop | Stops execution if exceeded |
-| TTL | Every loop iteration | Stops execution if exceeded |
-| Retries | During retry | Prevents infinite retries |
-
-### References
-- `src/mas/guardrails/engine.py`
-- Integration in `src/mas/runtime/orchestrator.py`
+- ⚠️ Four separate checks
 
 ---
 
@@ -304,24 +196,6 @@ All mutable state (run context, metrics, step status) is explicitly tracked and 
 - ✅ Complete audit trail
 - ✅ Easy to debug
 - ⚠️ More verbose code
-- ⚠️ Metrics collection overhead
-
-### Implementation
-```python
-# Explicit state tracking
-ctx = _RunContext(start_time=time.monotonic())
-
-# Explicit updates
-metrics_collector.record_step_completion()
-ctx.accumulated_cost += step_cost
-
-# Explicit logging
-logger.info("Step completed", step_id=step.id, cost=step_cost)
-```
-
-### References
-- `src/mas/runtime/orchestrator.py` - `_RunContext` usage
-- All logger.info/warning calls throughout codebase
 
 ---
 
@@ -347,18 +221,6 @@ Validate all inputs at system boundaries and in critical paths.
 - ✅ Clear error messages
 - ✅ Robust system
 - ⚠️ Validation overhead
-- ⚠️ May slow down fast paths
-
-### Validation Points
-1. Task/Plan creation (domain validation)
-2. Metrics creation (value range validation)
-3. Step execution (cost validation, NaN/Infinity checks)
-4. Guardrails configuration (positive values only)
-
-### References
-- `src/mas/domain/plan.py` - `Plan.is_executable()`
-- `src/mas/observability/metrics.py` - `ExecutionMetrics.__post_init__()`
-- `src/mas/runtime/orchestrator.py` - Cost validation in `_run_step()`
 
 ---
 
@@ -384,38 +246,6 @@ Use builder pattern for test scenarios (TaskBuilder, PlanBuilder, StepHandlerFac
 - ✅ Builder code is reusable
 - ✅ Test setup is maintainable
 - ⚠️ Additional builder code to maintain
-- ⚠️ New patterns for developers to learn
-
-### Implementation
-```python
-task = TaskBuilder().with_goal("Test").build()
-plan = PlanBuilder(task.id).with_linear_steps(3).build()
-registry = StepExecutorRegistry()
-registry.register("action", StepHandlerFactory.success_handler())
-```
-
-### References
-- `tests/e2e_scenario_builders.py`
-- All tests in `tests/test_e2e_scenarios.py`
-
----
-
-## Future ADRs (Milestone E+)
-
-### ADR-011: Async/Await Execution (TBD)
-- Non-blocking handler support
-- Concurrent independent steps
-- Integration with event loops
-
-### ADR-012: Distributed Execution (TBD)
-- Multi-worker orchestration
-- Distributed task queue
-- State synchronization
-
-### ADR-013: Machine Learning Integration (TBD)
-- Learned cost prediction
-- Optimal step ordering
-- Outcome prediction
 
 ---
 

@@ -35,8 +35,8 @@ for the full reference architecture.
 - PR-12: Observability Baseline (Logging/Metrics/Correlation IDs)
 - PR-13: End-to-End MVP Scenario Pack (25 E2E Tests)
 
-**In Progress:**
-- PR-14: Documentation & ADRs
+**In Review:**
+- PR-14: Documentation & Architecture Decision Records ([#38](https://github.com/WildcatKSS/Multi-Agent-System/pull/38))
 
 The work is sliced into milestones tracked in [`docs/roadmap.md`](docs/roadmap.md).
 
