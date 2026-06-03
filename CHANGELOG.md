@@ -59,18 +59,6 @@ The following are deliberately deferred to future milestones:
 
 ---
 
-## [Unreleased]
-
-### Planned for Milestone E
-
-- Distributed runtime support
-- Parallel step execution
-- Async/await handler support
-- Advanced reward modeling
-- Fine-tuning pipeline
-
----
-
 ## Version History
 
 This is the first stable release (1.0.0) of the Multi-Agent System. The project previously existed in pre-release development and is now production-ready.
