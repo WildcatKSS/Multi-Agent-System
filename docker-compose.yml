@@ -1,0 +1,86 @@
+# Multi-Agent System: Example Deployment
+# Version: 1.0.0
+# Usage: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # Multi-Agent System runtime
+  mas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mas-runtime
+    image: mas:1.0.0
+    environment:
+      # Logging and observability
+      LOG_LEVEL: INFO
+      # Guardrails configuration
+      MAS_MAX_COST: "100.0"
+      MAS_MAX_DURATION_SECONDS: "300"
+      MAS_MAX_RETRIES_PER_RUN: "10"
+      MAS_MAX_PLAN_DEPTH: "20"
+      # Memory configuration (optional)
+      MAS_MEMORY_BACKEND: "redis"  # or "memory" for in-process
+      MAS_REDIS_HOST: "redis"
+      MAS_REDIS_PORT: "6379"
+      MAS_REDIS_DB: "0"
+    ports:
+      - "8000:8000"  # If using API server
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - mas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mas; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Redis for optional memory layer
+  redis:
+    image: redis:7-alpine
+    container_name: mas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - mas-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  mas-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+
+# Example usage:
+#
+# Build and start services:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f mas
+#   docker-compose logs -f redis
+#
+# Run tests inside container:
+#   docker-compose exec mas pytest -v
+#
+# Access Python REPL:
+#   docker-compose exec mas python
+#
+# Stop and clean up:
+#   docker-compose down
+#   docker-compose down -v  # Also remove volumes
