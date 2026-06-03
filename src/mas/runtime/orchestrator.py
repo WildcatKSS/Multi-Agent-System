@@ -12,6 +12,7 @@ Readiness / skip rules:
 - A step whose action has no registered handler is SKIPPED (no-op baseline).
 """
 
+import logging
 import math
 import time
 import uuid
@@ -24,6 +25,8 @@ from mas.guardrails.violations import GuardViolation
 from mas.runtime.executor import StepExecutorRegistry, StepResult
 from mas.workflow.policy import PolicyEngine
 from mas.workflow.state import WorkflowState
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -164,6 +167,9 @@ class Runtime:
                 )
                 if not result.passed:
                     ctx.guard_violation = result.violation
+                    logger.info(
+                        f"Guardrail violated ({result.violation.guard_type.value}): {result.violation.message}"
+                    )
                     # Mark all non-terminal steps as SKIPPED.
                     for step in plan.steps:
                         if step.status in {StepStatus.PENDING, StepStatus.READY, StepStatus.EXECUTING}:
@@ -207,12 +213,22 @@ class Runtime:
             # Validate and accumulate cost (defensive: reject NaN/inf/negative values).
             cost = step.metadata.get("cost", 1.0)
             if not isinstance(cost, (int, float)) or isinstance(cost, bool):
-                raise ValueError(f"Step {step.id} cost must be numeric, got {type(cost).__name__}")
+                raise ValueError(
+                    f"Step {step.id} cost must be numeric, got {type(cost).__name__}. "
+                    f"Ensure step.metadata['cost'] is a float or int value."
+                )
             if math.isnan(cost) or math.isinf(cost):
-                raise ValueError(f"Step {step.id} cost must be finite, got {cost}")
+                raise ValueError(
+                    f"Step {step.id} cost must be finite, got {cost}. "
+                    f"Ensure cost is a real number (not NaN or Infinity)."
+                )
             if cost < 0:
-                raise ValueError(f"Step {step.id} cost must be non-negative, got {cost}")
+                raise ValueError(
+                    f"Step {step.id} cost must be non-negative, got {cost}. "
+                    f"Ensure cost is >= 0.0."
+                )
             ctx.accumulated_cost += cost
+            logger.debug(f"Step {step.id} completed (cost={cost}, total={ctx.accumulated_cost})")
             return
 
         # Failure: mark FAILED, then retry in-place if budget remains.

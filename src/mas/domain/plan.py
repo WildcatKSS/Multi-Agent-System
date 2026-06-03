@@ -93,15 +93,27 @@ class Plan:
 
         # Validate estimated_cost: must be non-negative and finite.
         if math.isnan(self.estimated_cost) or math.isinf(self.estimated_cost):
-            raise ValueError(f"estimated_cost must be finite, got {self.estimated_cost}")
+            raise ValueError(
+                f"estimated_cost must be finite, got {self.estimated_cost}. "
+                f"Ensure estimated_cost is a real number between 0.0 and infinity."
+            )
         if self.estimated_cost < 0:
-            raise ValueError("estimated_cost cannot be negative")
+            raise ValueError(
+                f"estimated_cost cannot be negative, got {self.estimated_cost}. "
+                f"Ensure estimated_cost >= 0.0."
+            )
 
         # Validate estimated_time_seconds: must be non-negative and finite.
         if math.isnan(self.estimated_time_seconds) or math.isinf(self.estimated_time_seconds):
-            raise ValueError(f"estimated_time_seconds must be finite, got {self.estimated_time_seconds}")
+            raise ValueError(
+                f"estimated_time_seconds must be finite, got {self.estimated_time_seconds}. "
+                f"Ensure estimated_time_seconds is a real number between 0.0 and infinity."
+            )
         if self.estimated_time_seconds < 0:
-            raise ValueError("estimated_time_seconds cannot be negative")
+            raise ValueError(
+                f"estimated_time_seconds cannot be negative, got {self.estimated_time_seconds}. "
+                f"Ensure estimated_time_seconds >= 0.0."
+            )
 
         # Validate step dependencies
         step_ids = {step.id for step in self.steps}
