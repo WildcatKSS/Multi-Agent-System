@@ -1,107 +1,21 @@
-# Multi-Agent System Community License v2.0.0
-
-**Custom Non-Commercial, Copyleft License**
+MIT License
 
 Copyright (c) 2026 Marvin
 
-## Grant of Rights
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Subject to the terms and conditions of this License, You are granted a worldwide,
-royalty-free, non-exclusive, revocable license to:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-1. **View and Study** the source code of the Software
-2. **Use Privately** for personal, educational, or research purposes
-3. **Modify and Adapt** for your own use
-4. **Distribute Modifications** under this same License (copyleft clause)
-
-## Permitted Use
-
-This Software may be freely used by:
-- **Individual developers** working on personal projects
-- **Non-profit organizations** advancing their charitable missions
-- **Educational institutions** for teaching and research
-- **Open-source projects** that remain under this License
-
-## Prohibited Commercial Use
-
-**You may NOT use this Software in any commercial context, including but not limited to:**
-
-1. **Selling the Software**: Charging money for the Software itself, in any form
-2. **Commercial Services**: Offering the Software as a service (SaaS), cloud hosting,
-   or managed service for payment
-3. **Commercial Support**: Selling consulting, support, training, or maintenance services
-4. **Commercial Products**: Including the Software in products or services that generate
-   revenue, directly or indirectly
-5. **Business Operations**: Using the Software in any for-profit organization's
-   operations (regardless of whether you charge customers for it)
-6. **Proprietary Derivatives**: Modifying the Software and selling it or its derivatives
-   to customers
-
-**Example Violations:**
-- A company using this Software as part of their business infrastructure
-- Offering a SaaS product built with this Software
-- Selling a modified version to customers
-- Charging for cloud hosting of this Software
-- Using it in a commercial project and monetizing the output
-
-## Copyleft Clause
-
-If you modify and distribute this Software or any derivative work, you must:
-
-1. **Retain this License**: All modifications must remain under this License
-2. **Share Source Code**: Provide source code to all recipients
-3. **Document Changes**: Clearly indicate what modifications you made
-4. **Propagate License**: All derivative works must include this License text
-
-You cannot make proprietary versions or closed-source forks.
-
-## Patent Grant
-
-You are also granted any patent rights the licensor holds in the Software,
-but only for non-commercial use as defined above.
-
-## Disclaimer
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-## Commercial Licensing
-
-If you wish to use this Software commercially, you must obtain a separate written
-license agreement from the copyright holder. Commercial use without a license is
-a violation of this agreement and may result in legal action.
-
-Contact: Open a private inquiry via the project's GitHub Security Advisories page
-(https://github.com/WildcatKSS/Multi-Agent-System/security/advisories) or contact
-the copyright holder through the GitHub profile https://github.com/WildcatKSS.
-
-## Termination
-
-This License is automatically terminated if:
-- You use the Software in violation of commercial use restrictions
-- You fail to comply with the copyleft requirements
-
-Upon termination, all rights granted are revoked and you must cease use immediately.
-
-## Interpretation
-
-In case of ambiguity about whether a use is commercial:
-- The spirit of this License is to keep the Software free for non-profit use
-- Any doubt favors the non-commercial interpretation
-- The copyright holder makes final determination
-
-## Governing Law
-
-This License is governed by the laws of the country of residence of the copyright
-holder, without regard to its conflict-of-law provisions. (Copyright holder: set
-your specific jurisdiction here before any public release.)
-
----
-
-**Effective Date**: June 6, 2026
-**Version**: 2.0.0
-**Last Updated**: 2026-06-06
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
