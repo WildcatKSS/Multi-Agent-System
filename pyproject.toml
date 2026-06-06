@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mas"
-version = "1.0.0"
-description = "Multi-Agent System: Generic autonomous agent orchestration framework"
+version = "2.0.0"
+description = "Multi-Agent System: Fully agentic autonomous agent orchestration powered by LLMs"
 readme = "README.md"
-license = "MIT"
+license = {text = "Multi-Agent System Community License v2.0.0"}
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "WildcatKSS" }]
