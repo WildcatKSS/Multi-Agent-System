@@ -3,9 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)](pyproject.toml)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Release: 1.0.0](https://img.shields.io/badge/release-1.0.0-brightgreen?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System/releases/tag/v1.0.0)
+[![Release: 2.0.0 (Dev)](https://img.shields.io/badge/release-2.0.0%20dev-orange?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System)
 
-A generic, autonomous multi-agent system that independently analyzes tasks, generates plans, selects tools, recovers from errors, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
+A fully agentic, autonomous multi-agent system powered by open source and proprietary LLMs. Independently analyzes tasks, generates plans, selects tools, recovers from errors, and evaluates output with intelligent reasoning. The architecture is intentionally generic and not tied to a specific use case.
+
+🚀 **Now with LLM Integration** — Ollama, Llama2, Claude, GPT-4 support + automatic fallback
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Contributing](CONTRIBUTING.md) • [License](LICENSE)
 
@@ -56,29 +58,36 @@ print(f"Success: {result.succeeded}")
 
 ## Features
 
-✅ **Production-Ready MVP**
+✅ **LLM-Powered Agents** (v2.0.0)
+- LLMPlanner: Intelligent task decomposition with Ollama/Claude/GPT
+- LLMToolSelector: Capability-aware tool selection via LLM reasoning
+- LLMEvaluator: Quality judgment with rules + heuristics + LLM
+- LLMSelfHealer: Failure analysis and adaptive recovery strategies
+- Semantic Memory: Learn patterns from past executions
+
+✅ **Production-Ready Foundation**
 - Single-worker runtime orchestration with dependency resolution
-- 4 core agents: Planner, Tool Selection, Self-Healing, Evaluator
 - 4 input adapters: Email, Calendar, Document, Transcript
-- Runtime guardrails: Cost, TTL, Retries, Plan Depth
+- Runtime guardrails: Cost, TTL, Retries, Plan Depth, LLM Cost
+- Working + Episodic + Semantic memory layers
 
 ✅ **Reliability & Operations**
-- Memory layer with working memory and episodic store
+- Multi-provider cascade: Ollama → HuggingFace → OpenAI → Deterministic fallback
 - Structured observability: correlation IDs, JSON logging, metrics
-- Error recovery with retries and fallbacks
-- Thread-safe execution via contextvars
+- Error recovery with retries and adaptive strategies
+- Thread-safe async execution via contextvars
 
 ✅ **Quality & Testing**
-- 450 comprehensive tests (100% passing, ~0.5s execution)
+- 450+ comprehensive tests (100% passing, ~0.5s execution)
 - Type-safe with full Python 3.12+ type hints
 - 0 security vulnerabilities
-- 10 Architecture Decision Records
+- 10 v1.0.0 Architecture Decision Records + v2.0.0 design docs
 
 ✅ **Well-Documented**
-- API reference and architecture guides
-- Production readiness documentation
-- Performance tuning and benchmarks
-- E2E scenarios with 25 realistic examples
+- Complete LLM integration guide
+- 12-phase development roadmap with team structure
+- Production deployment strategies (Docker, Kubernetes, SaaS)
+- 25+ E2E scenarios for testing
 
 ## Installation Options
 
@@ -89,7 +98,7 @@ pip install mas
 
 **Docker**:
 ```bash
-docker build -t mas:1.0.0 .
+docker build -t mas:2.0.0 .
 docker-compose up -d
 ```
 
@@ -97,16 +106,20 @@ docker-compose up -d
 
 ## Documentation
 
-### Core
+### Getting Started
+- **[LLM Roadmap](docs/llm-roadmap.md)** — v2.0.0 12-phase LLM integration plan
+- **[Quick Start: GitHub Setup](.github/QUICK_START_GITHUB.md)** — Set up for team development
+
+### Core Architecture
 - **[API Reference](src/mas/README.md)** — Complete module documentation
-- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and patterns
-- **[Architecture Decisions](docs/architecture-decisions.md)** — 10 ADRs explaining design choices
+- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and LLM layers
+- **[v1.0.0 Architecture Decisions](docs/v1.0.0-architecture-decisions.md)** — 10 ADRs explaining MVP design
 
 ### Operational
-- **[Performance Tuning](docs/performance-tuning.md)** — Benchmarks and optimization strategies
+- **[Performance Tuning](docs/performance-tuning.md)** — Benchmarks and optimization
 - **[E2E Scenarios](docs/e2e-scenarios.md)** — 25 realistic usage examples
 - **[Production Readiness](docs/production-readiness.md)** — Deployment and monitoring
-- **[Roadmap](docs/roadmap.md)** — Feature roadmap and milestones
+- **[Team Assignments](.github/TEAM_ASSIGNMENTS.md)** — Phase leads and role definitions
 
 ### Governance
 - **[Contributing](CONTRIBUTING.md)** — How to contribute

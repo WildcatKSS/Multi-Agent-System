@@ -1,0 +1,141 @@
+name: Phase Task
+description: Create a task for one of the LLM roadmap phases
+title: "[Phase X] Task Title"
+labels: ["status:ready", "priority:medium"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Phase Task Template
+
+        Use this template to create tasks within the LLM integration roadmap (Phases 1-12).
+
+        For more details, see [docs/llm-roadmap.md](../../docs/llm-roadmap.md)
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: "Phase"
+      description: "Which roadmap phase is this task in?"
+      options:
+        - "Phase 1: Provider Abstraction"
+        - "Phase 2: LLM Providers"
+        - "Phase 3: Prompt Templates"
+        - "Phase 4: LLM Agents"
+        - "Phase 5: Cost Tracking"
+        - "Phase 6: Configuration"
+        - "Phase 7: Cascade & Fallback"
+        - "Phase 8: Testing Patterns"
+        - "Phase 9: Documentation"
+        - "Phase 10: Semantic Memory"
+        - "Phase 11: GUI & REST API (Future)"
+        - "Phase 12: Commercialization (Future)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: "Issue Type"
+      description: "What kind of work is this?"
+      options:
+        - "Feature"
+        - "Enhancement"
+        - "Bug Fix"
+        - "Documentation"
+        - "Test"
+        - "Refactoring"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "How urgent is this work?"
+      options:
+        - "Critical (blocks others)"
+        - "High (do soon)"
+        - "Medium (normal)"
+        - "Low (defer if needed)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: "Which component does this affect?"
+      options:
+        - "planner"
+        - "tool-selector"
+        - "evaluator"
+        - "self-healer"
+        - "runtime"
+        - "memory"
+        - "observability"
+        - "guardrails"
+        - "llm (provider layer)"
+        - "other"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What needs to be done?"
+      placeholder: |
+        Describe the work to be completed.
+
+        Example:
+        - Create src/mas/llm/contracts.py
+        - Define LLMMessage, LLMResponse frozen dataclasses
+        - Define abstract LLMProvider base class
+        - Add type hints and comprehensive docstrings
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      description: "How will you know this is done?"
+      placeholder: |
+        - [ ] Code written and type-safe
+        - [ ] All unit tests pass
+        - [ ] No integration test regressions
+        - [ ] Documentation updated
+        - [ ] Code review approved
+      validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Dependencies"
+      description: "What other issues must be completed first?"
+      placeholder: |
+        Depends on #XXX, #YYY
+
+        (Leave blank if no dependencies)
+
+  - type: input
+    id: estimate
+    attributes:
+      label: "Time Estimate"
+      description: "Rough estimate of work required"
+      placeholder: "Examples: 4 hours, 1 day, 3 days, 1 week"
+      validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional Context"
+      description: "Any other relevant information?"
+      placeholder: |
+        - Links to relevant documentation
+        - Related issues or PRs
+        - Technical notes or concerns
+        - Design decisions
