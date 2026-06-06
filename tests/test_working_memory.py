@@ -1,11 +1,12 @@
 """Tests for Redis working memory."""
 
 import builtins
+
 import pytest
 
 from mas.memory.working_memory import (
-    WorkingMemoryConfig,
     RedisWorkingMemory,
+    WorkingMemoryConfig,
 )
 
 try:

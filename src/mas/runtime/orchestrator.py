@@ -15,7 +15,6 @@ Readiness / skip rules:
 import logging
 import math
 import time
-import uuid
 from dataclasses import dataclass, field
 
 from mas.domain.plan import Plan, Step, StepStatus
@@ -101,6 +100,7 @@ class Runtime:
         if self.guardrails:
             result = self.guardrails.check_plan(plan)
             if not result.passed:
+                assert result.violation is not None
                 logger.warning(f"Plan rejected by guardrails: {result.violation.message}")
                 metrics_collector.set_guard_violation(result.violation.guard_type.value)
                 metrics_collector.set_end_time(time.monotonic())
@@ -203,6 +203,7 @@ class Runtime:
                     ctx.accumulated_cost, elapsed, ctx.total_retries
                 )
                 if not result.passed:
+                    assert result.violation is not None
                     ctx.guard_violation = result.violation
                     logger.info(
                         f"Guardrail violated ({result.violation.guard_type.value}): {result.violation.message}"

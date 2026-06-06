@@ -5,9 +5,9 @@
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Release: 2.0.0 (Dev)](https://img.shields.io/badge/release-2.0.0%20dev-orange?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System)
 
-A fully agentic, autonomous multi-agent system powered by open source and proprietary LLMs. Independently analyzes tasks, generates plans, selects tools, recovers from errors, and evaluates output with intelligent reasoning. The architecture is intentionally generic and not tied to a specific use case.
+A deterministic, autonomous multi-agent runtime that analyzes tasks, executes dependency-ordered plans, enforces runtime guardrails, recovers from failures, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
-🚀 **Now with LLM Integration** — Ollama, Llama2, Claude, GPT-4 support + automatic fallback
+> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration (Ollama, Claude, GPT, provider fallback) is the **planned v2.0.0 roadmap** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). It is **not yet implemented**.
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
@@ -15,16 +15,15 @@ A fully agentic, autonomous multi-agent system powered by open source and propri
 
 ### Install
 
-```bash
-pip install mas
-```
+Install from source (the project is not published on PyPI):
 
-Or from source:
 ```bash
 git clone https://github.com/WildcatKSS/Multi-Agent-System.git
 cd Multi-Agent-System
-./install.sh
+./install.sh   # creates venv/ and installs with dev extras
 ```
+
+> Note: the PyPI name `mas` is taken by an unrelated package — do **not** `pip install mas`.
 
 ### Basic Usage
 
@@ -58,42 +57,36 @@ print(f"Success: {result.succeeded}")
 
 ## Features
 
-✅ **LLM-Powered Agents** (v2.0.0)
-- LLMPlanner: Intelligent task decomposition with Ollama/Claude/GPT
-- LLMToolSelector: Capability-aware tool selection via LLM reasoning
-- LLMEvaluator: Quality judgment with rules + heuristics + LLM
-- LLMSelfHealer: Failure analysis and adaptive recovery strategies
-- Semantic Memory: Learn patterns from past executions
+### ✅ Shipped (v1.x)
 
-✅ **Production-Ready Foundation**
+**Runtime foundation**
 - Single-worker runtime orchestration with dependency resolution
 - 4 input adapters: Email, Calendar, Document, Transcript
-- Runtime guardrails: Cost, TTL, Retries, Plan Depth, LLM Cost
-- Working + Episodic + Semantic memory layers
+- Runtime guardrails: Cost, TTL, Retries, Plan Depth
+- Working + Episodic memory layers (optional Redis backend)
 
-✅ **Reliability & Operations**
-- Multi-provider cascade: Ollama → HuggingFace → OpenAI → Deterministic fallback
+**Reliability & operations**
 - Structured observability: correlation IDs, JSON logging, metrics
-- Error recovery with retries and adaptive strategies
-- Thread-safe async execution via contextvars
+- Error recovery with retries, escalation, and adaptive strategies
+- Deterministic, rules + heuristics based evaluation
 
-✅ **Quality & Testing**
-- 450+ comprehensive tests (100% passing, ~0.5s execution)
-- Type-safe with full Python 3.12+ type hints
-- 0 security vulnerabilities
-- 10 v1.0.0 Architecture Decision Records + v2.0.0 design docs
+**Quality**
+- 450 tests passing (~1s), 94% line/branch coverage
+- Typed throughout — `mypy --strict` clean, `ruff` clean
+- Zero runtime dependencies (Redis optional)
 
-✅ **Well-Documented**
-- Complete LLM integration guide
-- 12-phase development roadmap with team structure
-- Production deployment strategies (Docker, Kubernetes, SaaS)
-- 25+ E2E scenarios for testing
+### 🚧 Planned — v2.0.0 LLM roadmap (not yet implemented)
+
+- LLM-powered Planner / ToolSelector / Evaluator / SelfHealer
+- Provider abstraction: Ollama → HuggingFace → OpenAI/Anthropic with fallback cascade
+- Semantic memory for pattern learning
+- See **[docs/llm-roadmap.md](docs/llm-roadmap.md)** for the 12-phase plan.
 
 ## Installation Options
 
-**PyPI** (recommended):
+**From source** (recommended):
 ```bash
-pip install mas
+./install.sh
 ```
 
 **Docker**:
@@ -102,7 +95,7 @@ docker build -t mas:2.0.0 .
 docker-compose up -d
 ```
 
-**Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for advanced memory features)
+**Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for the Redis-backed working memory)
 
 ## Documentation
 
@@ -111,8 +104,7 @@ docker-compose up -d
 - **[Quick Start: GitHub Setup](.github/QUICK_START_GITHUB.md)** — Set up for team development
 
 ### Core Architecture
-- **[API Reference](src/mas/README.md)** — Complete module documentation
-- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and LLM layers
+- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and planned LLM layers
 
 ### Operational
 - **[Team Assignments](.github/TEAM_ASSIGNMENTS.md)** — Phase leads and role definitions
@@ -145,25 +137,16 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 450 tests
-- Unit tests: 200+
-- Integration tests: 150+
-- E2E scenarios: 25+
-- Guardrail tests: 50+
-- Recovery tests: 25+
+**Coverage**: 450 tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
-**Results**: 100% pass rate, ~0.5s total execution, 0% flakiness
+**Results**: 100% pass rate, ~1s total execution, 94% line/branch coverage.
 
-## Performance
-
-| Plan Size | Time    |
-|-----------|---------|
-| 3 steps   | ~0.15ms |
-| 10 steps  | ~0.5ms  |
-| 25 steps  | ~2ms    |
-| 100 steps | ~8ms    |
-
-**Memory**: Base runtime ~50MB + episodic store (~10MB per 1000 records)
+Quality gates (run locally or in CI):
+```bash
+ruff check src tests      # lint
+mypy                      # strict type check
+pytest --cov              # tests + coverage
+```
 
 ## Architecture
 
@@ -203,7 +186,7 @@ src/mas/
 
 ## Release Information
 
-**Version**: 2.0.0 (Development) | **Target Release**: 2026-12-31 | **Status**: LLM Integration in Progress
+**Version**: 2.0.0 (Development) | **Target Release**: 2026-12-31 | **Status**: v1.x runtime stable; LLM integration planned
 
 ## License
 

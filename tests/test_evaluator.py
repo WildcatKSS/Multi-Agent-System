@@ -1,14 +1,13 @@
 """Tests for Evaluator Agent."""
 
-import pytest
 
-from mas.agents.evaluator import EvaluatorAgent
 from mas.agents.evaluation.contracts import (
     EvaluationRule,
     RuleType,
 )
 from mas.agents.evaluation.heuristics import HeuristicConfig
 from mas.agents.evaluation.rules_engine import DeterministicRulesEngine
+from mas.agents.evaluator import EvaluatorAgent
 
 
 class TestEvaluatorAgent:

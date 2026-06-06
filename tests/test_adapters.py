@@ -1,16 +1,15 @@
 """Tests for input adapters."""
 
-import pytest
 
+from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.contracts import (
-    EmailInput,
     CalendarInput,
     DocumentInput,
+    EmailInput,
     TranscriptInput,
 )
-from mas.adapters.email_adapter import EmailAdapter
-from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.document_adapter import DocumentAdapter
+from mas.adapters.email_adapter import EmailAdapter
 from mas.adapters.transcript_adapter import TranscriptAdapter
 from mas.domain.task import Task
 

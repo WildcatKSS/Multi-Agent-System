@@ -1,11 +1,10 @@
 """Tests for Self-Healing Agent."""
 
-import pytest
 
-from mas.agents.self_healer import SelfHealingAgent
+from mas.agents.recovery.escalation import EscalationReason
 from mas.agents.recovery.failures import FailureType, StepFailure
 from mas.agents.recovery.retry_policy import RetryConfig
-from mas.agents.recovery.escalation import EscalationReason
+from mas.agents.self_healer import SelfHealingAgent
 
 
 class TestSelfHealingAgent:

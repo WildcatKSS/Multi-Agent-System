@@ -1,6 +1,5 @@
 """Tests for rules engine."""
 
-import pytest
 
 from mas.agents.evaluation.contracts import (
     EvaluationRule,

@@ -3,6 +3,7 @@
 import json
 import logging
 from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class RedisWorkingMemory:
     def __init__(
         self,
         config: WorkingMemoryConfig | None = None,
-        _client=None,
+        _client: Any = None,
     ) -> None:
         """Initialize Redis working memory.
 
@@ -71,7 +72,7 @@ class RedisWorkingMemory:
         self.config = config or WorkingMemoryConfig()
         self._client = _client if _client is not None else self._connect()
 
-    def _connect(self):
+    def _connect(self) -> Any:
         """Connect to Redis.
 
         Raises:
@@ -107,7 +108,7 @@ class RedisWorkingMemory:
         """
         return f"{self.config.key_prefix}{key}"
 
-    def set(self, key: str, value: dict) -> None:
+    def set(self, key: str, value: dict[str, Any]) -> None:
         """Store a value with automatic TTL.
 
         Args:
@@ -120,7 +121,7 @@ class RedisWorkingMemory:
             ex=self.config.ttl_seconds,
         )
 
-    def get(self, key: str) -> dict | None:
+    def get(self, key: str) -> dict[str, Any] | None:
         """Retrieve a value.
 
         Args:

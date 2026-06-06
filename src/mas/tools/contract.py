@@ -1,6 +1,7 @@
 """Tool contracts for the multi-agent system."""
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -9,10 +10,10 @@ class Tool:
 
     name: str
     description: str
-    inputs: dict = field(default_factory=dict)
+    inputs: dict[str, Any] = field(default_factory=dict)
     """Input schema/documentation for the tool."""
 
-    outputs: dict = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
     """Output schema/documentation for the tool."""
 
     prerequisites: list[str] = field(default_factory=list)
@@ -38,7 +39,7 @@ class ToolSelection:
 
     step_id: str
     tool_name: str
-    tool_inputs: dict = field(default_factory=dict)
+    tool_inputs: dict[str, Any] = field(default_factory=dict)
     """Inputs to pass to the tool."""
 
     required_tools: list[str] = field(default_factory=list)

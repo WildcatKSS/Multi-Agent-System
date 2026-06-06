@@ -5,19 +5,19 @@ and escalation logic to enable the system to recover from transient failures
 while preventing infinite loops and resource exhaustion.
 """
 
-from mas.agents.recovery.failures import (
-    FailureType,
-    StepFailure,
-    RecoverableError,
-    PermanentError,
-)
-from mas.agents.recovery.retry_policy import (
-    RetryPolicy,
-    RetryConfig,
-)
 from mas.agents.recovery.escalation import (
     EscalationOutcome,
     EscalationReason,
+)
+from mas.agents.recovery.failures import (
+    FailureType,
+    PermanentError,
+    RecoverableError,
+    StepFailure,
+)
+from mas.agents.recovery.retry_policy import (
+    RetryConfig,
+    RetryPolicy,
 )
 
 __all__ = [

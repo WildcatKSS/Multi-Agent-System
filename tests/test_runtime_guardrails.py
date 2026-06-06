@@ -1,6 +1,5 @@
 """Tests for Runtime with guardrails enforcement."""
 
-from unittest.mock import patch
 
 from mas.domain.plan import Plan, Step
 from mas.domain.task import Task, TaskStatus
@@ -166,22 +165,6 @@ class TestRuntimeGuardrailsCost:
 
 class TestRuntimeGuardrailsTTL:
     """Verify elapsed time tracking and enforcement."""
-
-    def test_ttl_within_limit(self) -> None:
-        """Plan completes within TTL."""
-        config = GuardrailsConfig(max_duration_seconds=10.0)
-        engine = GuardrailsEngine(config)
-        task = _task()
-        plan = _plan()
-
-        registry = StepExecutorRegistry()
-        registry.register("test", lambda s: StepResult(success=True))
-
-        runtime = Runtime(registry=registry, guardrails=engine)
-        result = runtime.run(task, plan)
-
-        assert result.succeeded is True
-        assert result.guard_violation is None
 
     def test_ttl_within_limit(self) -> None:
         """Plan completes within TTL."""

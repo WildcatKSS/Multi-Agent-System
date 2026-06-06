@@ -5,12 +5,12 @@ before final annotation, with configurable thresholds for pass/fail decisions.
 """
 
 from mas.agents.evaluation.contracts import (
+    EvaluationReport,
     EvaluationRule,
     HeuristicScore,
-    EvaluationReport,
 )
-from mas.agents.evaluation.rules_engine import DeterministicRulesEngine
 from mas.agents.evaluation.heuristics import HeuristicScorer
+from mas.agents.evaluation.rules_engine import DeterministicRulesEngine
 
 __all__ = [
     "EvaluationRule",

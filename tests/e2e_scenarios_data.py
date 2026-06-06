@@ -1,6 +1,5 @@
 """Scenario data and constants for E2E testing."""
 
-from typing import Any
 
 # Happy path scenario definitions
 HAPPY_PATH_SCENARIOS = {

@@ -3,8 +3,8 @@
 import logging
 
 from mas.domain.plan import Plan
-from mas.tools.registry import ToolRegistry
 from mas.tools.contract import ToolSelection
+from mas.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 

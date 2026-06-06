@@ -1,7 +1,7 @@
 """Metrics collection for execution monitoring."""
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -40,7 +40,7 @@ class ExecutionMetrics:
     accumulated_cost: float = 0.0
     elapsed_seconds: float = 0.0
     succeeded: bool = False
-    guard_violation: Optional[str] = None
+    guard_violation: str | None = None
 
     def __post_init__(self) -> None:
         """Validate metrics."""
@@ -68,7 +68,7 @@ class ExecutionMetrics:
             return 0.0
         return self.completed_steps / total
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert metrics to dictionary for logging/serialization.
 
         Returns:
@@ -114,8 +114,8 @@ class MetricsCollector:
             workflow_id=workflow_id,
             plan_id=plan_id,
         )
-        self._start_time: Optional[float] = None
-        self._end_time: Optional[float] = None
+        self._start_time: float | None = None
+        self._end_time: float | None = None
 
     def set_plan_size(self, total_steps: int) -> None:
         """Set the total number of steps in the plan.
@@ -183,7 +183,7 @@ class MetricsCollector:
         """
         self.metrics.succeeded = succeeded
 
-    def set_guard_violation(self, violation_type: Optional[str]) -> None:
+    def set_guard_violation(self, violation_type: str | None) -> None:
         """Record a guard violation that halted execution.
 
         Args:

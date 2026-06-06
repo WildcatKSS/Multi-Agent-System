@@ -1,10 +1,10 @@
-# Multi-Agent System: Production Docker Image
-# Version: 1.0.0
+# Multi-Agent System: Container image
+# Version: 2.0.0
 # Python 3.12-slim base for minimal image size and security footprint
 
 FROM python:3.12-slim
 
-LABEL version="1.0.0"
+LABEL version="2.0.0"
 LABEL description="Multi-Agent System: Generic autonomous agent orchestration framework"
 LABEL maintainer="WildcatKSS"
 
@@ -28,10 +28,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Python dependencies (include the optional Redis extra for the
+# Redis-backed working memory; drop "[redis]" for the zero-dependency core).
 RUN pip install --upgrade pip setuptools && \
-    pip install -e . && \
-    pip install redis>=5.0
+    pip install -e ".[redis]"
 
 # Switch to non-root user
 USER mas
@@ -44,6 +44,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 CMD ["python", "-c", "from mas import __version__; print(f'Multi-Agent System v{__version__}')"]
 
 # Alternative entry points:
-# - Run CLI: docker run mas:1.0.0 mas --help
-# - Run tests: docker run mas:1.0.0 pytest -v
-# - Run REPL: docker run -it mas:1.0.0 python
+# - Run CLI: docker run mas:2.0.0 mas --help
+# - Run tests: docker run mas:2.0.0 pytest -v
+# - Run REPL: docker run -it mas:2.0.0 python

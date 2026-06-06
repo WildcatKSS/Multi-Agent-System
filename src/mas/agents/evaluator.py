@@ -1,8 +1,9 @@
 """Evaluator Agent for quality gating of step outputs."""
 
 import logging
+from typing import Any
 
-from mas.agents.evaluation.contracts import EvaluationReport, RuleType
+from mas.agents.evaluation.contracts import EvaluationReport
 from mas.agents.evaluation.heuristics import (
     HeuristicConfig,
     HeuristicScorer,
@@ -30,7 +31,7 @@ class EvaluatorAgent:
         self.heuristic_scorer = HeuristicScorer(heuristic_config)
 
     def evaluate(
-        self, step_id: str, output: dict, context: dict | None = None
+        self, step_id: str, output: dict[str, Any], context: dict[str, Any] | None = None
     ) -> EvaluationReport:
         """Evaluate step output.
 
@@ -85,7 +86,7 @@ class EvaluatorAgent:
         self,
         rules_passed: bool,
         rule_results: dict[str, bool],
-        heuristic_scores: list,
+        heuristic_scores: list[Any],
         overall_score: float,
     ) -> str:
         """Generate human-readable feedback from evaluation.

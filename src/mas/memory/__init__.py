@@ -6,19 +6,19 @@ unified MemoryAgent interface.
 """
 
 from mas.memory.contracts import (
-    MemoryType,
-    MemoryEntry,
     EpisodicRecord,
+    MemoryEntry,
+    MemoryType,
 )
 from mas.memory.episodic_store import (
     EpisodicStore,
     InMemoryEpisodicStore,
 )
-from mas.memory.working_memory import (
-    WorkingMemoryConfig,
-    RedisWorkingMemory,
-)
 from mas.memory.memory_agent import MemoryAgent
+from mas.memory.working_memory import (
+    RedisWorkingMemory,
+    WorkingMemoryConfig,
+)
 
 __all__ = [
     "MemoryType",

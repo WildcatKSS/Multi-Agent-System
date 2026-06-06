@@ -3,6 +3,7 @@
 import math
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class StepStatus(Enum):
@@ -31,12 +32,12 @@ class Step:
 
     id: str
     action: str
-    inputs: dict = field(default_factory=dict)
+    inputs: dict[str, Any] = field(default_factory=dict)
     depends_on: list[str] = field(default_factory=list)
     status: StepStatus = StepStatus.PENDING
     retry_count: int = 0
     max_retries: int = 3
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate step on creation."""
@@ -82,7 +83,7 @@ class Plan:
     estimated_cost: float = 0.0
     estimated_time_seconds: float = 0.0
     reasoning: str = ""
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate plan on creation."""
@@ -149,9 +150,8 @@ class Plan:
 
         # Check each node for cycles
         for step in self.steps:
-            if step.id not in visited:
-                if has_cycle(step.id):
-                    raise ValueError(f"Circular dependency detected in plan {self.id}")
+            if step.id not in visited and has_cycle(step.id):
+                raise ValueError(f"Circular dependency detected in plan {self.id}")
 
     def get_steps_by_status(self, status: StepStatus) -> list[Step]:
         """Get all steps with a specific status."""
