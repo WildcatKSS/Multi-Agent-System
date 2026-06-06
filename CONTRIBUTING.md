@@ -109,24 +109,45 @@ PRs are reviewed for:
 - **Security** — Are there any vulnerabilities?
 - **Performance** — Are there performance concerns?
 
-## Areas for Contribution
+## Contributing to v2.0.0 (LLM Integration)
 
-### High Priority
-- Distributed runtime support (Milestone E)
-- Additional input adapters
-- More evaluation rules and heuristics
-- Performance optimizations
+The v2.0.0 release focuses on LLM integration with open source models (Ollama, Llama2, Mistral) and optional proprietary APIs.
 
-### Medium Priority
-- Documentation improvements
-- Example scenarios
-- Community tools and utilities
-- Integration with external systems
+### Getting Started with LLM Development
 
-### Low Priority
-- Code style improvements
-- Comment enhancements
-- Minor refactors
+For detailed roadmap and team structure:
+- **Read**: [docs/llm-roadmap.md](docs/llm-roadmap.md) — 12-phase development plan
+- **Setup**: [.github/QUICK_START_GITHUB.md](.github/QUICK_START_GITHUB.md) — GitHub automation
+- **Team**: [.github/TEAM_ASSIGNMENTS.md](.github/TEAM_ASSIGNMENTS.md) — Phase leads and roles
+
+### LLM Development Phases
+
+| Phase | Focus | Status | Lead |
+|-------|-------|--------|------|
+| **1** | Provider Abstraction | Coming soon | TBD |
+| **2** | LLM Providers (Ollama, HuggingFace, OpenAI, Anthropic) | Coming soon | TBD |
+| **3** | Prompt Templates (YAML-based) | Coming soon | TBD |
+| **4** | LLM Agents (Planner, Tool Selector, Evaluator, Self-Healer) | Coming soon | TBD |
+| **5-10** | Cost Tracking, Config, Cascade, Testing, Docs, Semantic Memory | Coming soon | TBD |
+
+### High Priority (v2.0.0)
+- LLM provider abstraction layer
+- Ollama provider implementation (local, free)
+- LLM-based agents with deterministic fallback
+- Semantic memory and pattern learning
+- Prompt template system
+
+### Medium Priority (v2.0+)
+- Additional LLM providers (Gemini, Cohere, etc.)
+- Distributed runtime support
+- Advanced prompt engineering tools
+- Model fine-tuning support
+
+### Low Priority (Future)
+- GUI dashboard (Phase 11)
+- Commercialization/SaaS (Phase 12)
+- Reward modeling
+- Adaptive learning
 
 ## Design Principles
 
@@ -138,7 +159,8 @@ When contributing, keep these principles in mind:
 4. **No implicit mutations** — All changes logged and auditable
 5. **Composition over refactors** — Small iterations preferred
 
-See [docs/architecture-decisions.md](docs/architecture-decisions.md) for detailed ADRs.
+See [docs/v1.0.0-architecture-decisions.md](docs/v1.0.0-architecture-decisions.md) for detailed v1.0.0 ADRs.
+See [docs/multi-agent-system-reference.md](docs/multi-agent-system-reference.md) for v2.0.0 architecture.
 
 ## Questions or Need Help?
 

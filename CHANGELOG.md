@@ -5,6 +5,81 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - In Development (Estimated 2026-12-31)
+
+### 🚀 LLM Integration (Phases 1-10)
+
+#### New Features
+- **LLM Provider Abstraction** — Pluggable provider layer supporting:
+  - Ollama (local, free) — Llama2, Mistral, etc.
+  - HuggingFace Inference API
+  - OpenAI (GPT-3.5-turbo, GPT-4)
+  - Anthropic (Claude models)
+  - Provider cascade with automatic fallback
+
+- **LLM-Powered Agents** — All 4 core agents now support LLM reasoning:
+  - LLMPlanner: Intelligent task decomposition
+  - LLMToolSelector: Capability-aware tool matching
+  - LLMEvaluator: Quality judgment with rules + heuristics + LLM
+  - LLMSelfHealer: Adaptive failure analysis and recovery
+
+- **Prompt Template System** — YAML-based versioned prompts:
+  - Reproducible agent behavior
+  - Easy customization per agent
+  - Variable substitution and validation
+
+- **Semantic Memory Layer** — Learn from past executions:
+  - Pattern extraction from episodic records
+  - Tool effectiveness tracking
+  - Success metrics and strategy learning
+  - Automatic indexing and querying
+
+- **Cost Tracking & Guardrails** — LLM-specific monitoring:
+  - Token counting and cost estimation
+  - max_llm_cost enforcement
+  - Per-provider pricing models
+  - Usage analytics and dashboards
+
+#### Architecture Completions
+- **Layer 1 (Planning)**: LLM-based planning replaces deterministic
+- **Layer 2 (Tool Selection)**: LLM-based selection replaces direct mapping
+- **Layer 3 (Self-Recovery)**: LLM-based failure analysis replaces fixed policy
+- **Layer 4 (Evaluation)**: Completes with LLM judgment component
+- **Layer 5 (Runtime)**: Async support prepared for distributed execution
+- **Layer 6 (Memory)**: Semantic memory added (completes all 4 types)
+
+#### Backward Compatibility
+- ✅ v1.0.0 deterministic agents still work
+- ✅ LLM agents are opt-in (requires LLMConfig)
+- ✅ Automatic fallback to deterministic if LLM unavailable
+- ✅ Zero breaking changes to public APIs
+- ✅ All 450+ existing tests continue to pass
+
+#### Testing & Quality
+- 150+ new LLM integration tests
+- Mock LLM provider for deterministic testing
+- Record/replay cassettes for real model responses
+- Optional E2E tests with Ollama
+- 100% type-safe with Python 3.12+
+
+#### Documentation
+- 12-phase detailed roadmap with timeline
+- GitHub automation scripts and templates
+- Team structure and phase lead assignments
+- LLM provider setup guides
+- Migration guide from v1.0.0 to v2.0.0
+
+### Breaking Changes
+None. v2.0.0 is backward compatible with v1.0.0.
+
+### Security Updates
+- Input validation for all LLM provider responses
+- Prompt injection prevention (prompts from code only)
+- API key handling best practices
+- Cost limit enforcement for API-based models
+
+---
+
 ## [1.0.0] - 2026-06-03
 
 ### MVP Features Implemented

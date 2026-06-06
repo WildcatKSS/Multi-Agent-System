@@ -12,6 +12,22 @@ Versions are expressed as `MAJOR.MINOR.PATCH`:
 
 Example: `1.0.0` → `1.1.0` (new feature) → `1.1.1` (bug fix) → `2.0.0` (breaking change)
 
+## Release Timeline
+
+### v1.0.0 (Released 2026-06-03)
+Production-ready MVP with deterministic agents, single-worker orchestration, guardrails, and observability.
+
+### v2.0.0 (In Development - Estimated 2026-12-31)
+LLM integration: Transforms deterministic agents into LLM-powered reasoning, adds semantic memory, and completes all 6 architecture layers.
+
+**Key Changes:**
+- ✅ Backward compatible with v1.0.0 (no breaking changes)
+- ✅ LLM agents opt-in (v1.0.0 deterministic agents still work)
+- ✅ All 450+ existing tests continue to pass
+- ✅ New memory layer: Semantic Memory for pattern learning
+
+---
+
 ## API Stability Guarantees
 
 ### 1.0.0 Release
@@ -45,8 +61,51 @@ runtime = Runtime(registry=registry)
 result = runtime.run(task, plan)
 
 # Still works in 1.1.0, 1.2.0, etc.
-# May not work in 2.0.0
+# ALSO works in 2.0.0 (backward compatible!)
 ```
+
+### 2.0.0 Release (Estimated 2026-12-31)
+
+The 2.0.0 release introduces LLM integration while maintaining backward compatibility:
+
+**New Public APIs** (v2.0.0):
+- `src/mas/llm/` module (LLM provider abstraction)
+- LLM agent classes: `LLMPlanner`, `LLMToolSelector`, `LLMEvaluator`, `LLMSelfHealer`
+- `src/mas/memory/semantic_store.py` (semantic memory)
+- Async methods: `Runtime.run_async()`
+
+**What's Stable:**
+- All v1.0.0 public APIs remain unchanged
+- v1.0.0 deterministic agents continue to work
+- Backward compatibility: v1.0.0 code runs unmodified in v2.0.0
+- Configuration schemas extended (new optional `LLMConfig`)
+
+**Backward Compatibility Guarantee:**
+```python
+# v1.0.0 code: deterministic agents
+from mas.agents.planner import Planner
+from mas.agents.tool_selector import ToolSelector
+
+planner = Planner()  # Deterministic (v1.0.0)
+selector = ToolSelector(registry)  # Direct mapping (v1.0.0)
+
+# This STILL WORKS in v2.0.0 (100% compatible)
+# No code changes required!
+
+# v2.0.0 code: LLM agents (opt-in)
+from mas.agents.factory import AgentFactory
+from mas.llm.config import OllamaConfig
+
+factory = AgentFactory(llm_config=OllamaConfig())
+llm_planner = factory.create_planner()  # LLM-based (new in v2.0.0)
+```
+
+**What's New (v2.0.0):**
+- LLM provider layer with cascading fallback
+- LLM-powered agents with deterministic fallback
+- Semantic memory for pattern learning
+- Cost tracking and guardrails for LLM calls
+- Async runtime support for future distribution
 
 ## Deprecation Policy
 
