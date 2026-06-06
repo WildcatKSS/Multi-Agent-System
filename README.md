@@ -9,7 +9,7 @@ A fully agentic, autonomous multi-agent system powered by open source and propri
 
 🚀 **Now with LLM Integration** — Ollama, Llama2, Claude, GPT-4 support + automatic fallback
 
-[Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Contributing](CONTRIBUTING.md) • [License](LICENSE)
+[Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
 ## Quick Start
 
@@ -113,7 +113,6 @@ docker-compose up -d
 ### Core Architecture
 - **[API Reference](src/mas/README.md)** — Complete module documentation
 - **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and LLM layers
-- **[v1.0.0 Architecture Decisions](docs/v1.0.0-architecture-decisions.md)** — 10 ADRs explaining MVP design
 
 ### Operational
 - **[Team Assignments](.github/TEAM_ASSIGNMENTS.md)** — Phase leads and role definitions
@@ -166,8 +165,6 @@ pytest -v
 
 **Memory**: Base runtime ~50MB + episodic store (~10MB per 1000 records)
 
-See [Performance Tuning](docs/performance-tuning.md) for detailed benchmarks.
-
 ## Architecture
 
 **Library-first design** — `mas` is a reusable Python library with optional CLI wrapper.
@@ -206,7 +203,7 @@ src/mas/
 
 ## Release Information
 
-**Version**: 1.0.0 | **Released**: 2026-06-03 | **Status**: Production Ready
+**Version**: 2.0.0 (Development) | **Target Release**: 2026-12-31 | **Status**: LLM Integration in Progress
 
 ## License
 
