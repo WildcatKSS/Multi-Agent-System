@@ -116,16 +116,11 @@ docker-compose up -d
 - **[v1.0.0 Architecture Decisions](docs/v1.0.0-architecture-decisions.md)** — 10 ADRs explaining MVP design
 
 ### Operational
-- **[Performance Tuning](docs/performance-tuning.md)** — Benchmarks and optimization
-- **[E2E Scenarios](docs/e2e-scenarios.md)** — 25 realistic usage examples
-- **[Production Readiness](docs/production-readiness.md)** — Deployment and monitoring
 - **[Team Assignments](.github/TEAM_ASSIGNMENTS.md)** — Phase leads and role definitions
 
 ### Governance
-- **[Contributing](CONTRIBUTING.md)** — How to contribute
-- **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community standards
-- **[Changelog](CHANGELOG.md)** — Release history
-- **[Versioning](VERSIONING.md)** — SemVer 2.0.0 policy
+- **[Security Policy](SECURITY.md)** — Vulnerability reporting
+- **[License](LICENSE)** — MIT License
 
 ## Testing
 
