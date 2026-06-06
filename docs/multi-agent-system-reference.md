@@ -280,21 +280,198 @@ Goals:
 
 ---
 
-# Design Debt
+---
 
-## Planner DSL
+## LLM Implementation Strategy (Roadmap v1.1+)
 
-### MVP
+As of version 1.1.0, the architecture layers are implemented with LLM agents while maintaining backward compatibility with deterministic fallbacks.
 
-Unstructured LLM output.
+### Layer 1 — Planning (with LLM)
 
-### Future
+**MVP Implementation** (v1.0.0): Deterministic keyword-based planning
 
-Migration toward:
+**LLM Implementation** (v1.1.0 - Phase 4):
+- LLMPlanner uses language model for task decomposition
+- Accepts natural language task description
+- Generates structured Plan with Steps using LLM reasoning
+- Prompt template: `prompts/planner/decompose_task.yaml`
+- Fallback: Deterministic Planner if LLM unavailable
 
-* JSON schema
-* TypedDict
-* formal plan contracts
+**Technologies**:
+- Primary: Ollama (local, free models: Llama2, Mistral)
+- Optional: OpenAI, Anthropic, HuggingFace
+
+---
+
+### Layer 2 — Tool Selection (with LLM)
+
+**MVP Implementation** (v1.0.0): Direct action→tool name mapping
+
+**LLM Implementation** (v1.1.0 - Phase 4):
+- LLMToolSelector uses language model for capability-aware selection
+- Analyzes step action and available tool descriptions
+- Scores tools by relevance using LLM reasoning
+- Prompt template: `prompts/tool_selector/capability_matching.yaml`
+- Confidence thresholding: Falls back to deterministic if confidence < threshold
+- Fallback: Deterministic ToolSelector if LLM fails
+
+**Technologies**: Same as Layer 1
+
+---
+
+### Layer 3 — Self-Recovery (with LLM)
+
+**MVP Implementation** (v1.0.0): Deterministic retry policy + fixed escalation
+
+**LLM Implementation** (v1.1.0 - Phase 4):
+- LLMSelfHealer uses language model for failure analysis
+- Analyzes error message, context, and failure type
+- LLM classifies error as recoverable vs permanent
+- Suggests recovery strategies (beyond simple retries)
+- Prompt template: `prompts/self_healer/analyze_failure.yaml`
+- Fallback: Deterministic SelfHealer if LLM fails
+
+**Technologies**: Same as Layer 1
+
+---
+
+### Layer 4 — Evaluation (Complete)
+
+**MVP Implementation** (v1.0.0): Deterministic rules + heuristic scoring
+
+**LLM Implementation** (v1.1.0 - Phase 4):
+- LLMEvaluator adds LLM judgment component (completing architecture)
+- Three evaluation components working together:
+  1. **Deterministic rules**: Fixed pass/fail criteria
+  2. **Heuristic scoring**: Weighted scoring for quality metrics
+  3. **LLM judgment**: Language model assessment of output quality
+- Combined score = (rules + heuristics + llm_judgment) / 3
+- Prompt template: `prompts/evaluator/evaluate_output.yaml`
+- Fallback: Deterministic + heuristic evaluation if LLM fails
+
+**Technologies**: Same as Layer 1
+
+---
+
+### Layer 5 — Runtime (with Async Support)
+
+**MVP Implementation** (v1.0.0): Synchronous single-worker orchestrator
+
+**LLM Implementation** (v1.1.0 - Phase 4):
+- Extended Runtime with async support for non-blocking LLM calls
+- New method: `async def run_async(task: Task) -> RunResult`
+- Preserves existing synchronous `run()` for backward compatibility
+- Prepares foundation for distributed execution (future phases)
+- Handles async LLM provider calls without blocking
+
+**Technologies**: Python asyncio
+
+---
+
+### Layer 6 — Memory Architecture (Complete)
+
+**MVP Implementation** (v1.0.0): Working + Episodic memory
+
+**LLM Implementation Enhancement** (v1.1.0 - Phase 10):
+- Added Semantic Memory layer for pattern learning
+- Four memory types now fully integrated:
+
+1. **Working Memory** (existing):
+   - Temporary task state
+   - Redis-backed with TTL
+   - Single writer
+
+2. **Episodic Memory** (existing):
+   - Execution history (append-only)
+   - All past task runs and results
+   - Used for historical analysis
+
+3. **Semantic Memory** (v1.1.0):
+   - Reusable patterns extracted from episodic records
+   - Stores successful strategies by task type
+   - Tool effectiveness metrics
+   - Plan templates from successful runs
+   - Used by agents to guide new execution
+
+4. **Event Log** (via episodic store):
+   - Immutable audit trail
+   - Complete state transition history
+   - Replay capability
+
+**Learning Loop**:
+```
+Task Execution
+    ↓
+Episodic Record Created
+    ↓
+Success? → Extract Patterns
+    ↓
+Semantic Memory Updated
+    ↓
+Future Tasks Query Semantic Memory
+    ↓
+LLM Agents Use Patterns as Examples
+    ↓
+Improved Planning, Tool Selection, Evaluation
+```
+
+**Technologies**: Redis, optional vector embeddings
+
+---
+
+## Implementation Roadmap
+
+| Layer | MVP (v1.0.0) | v1.1.0 (Phase 4) | v1.2.0 (Phase 10) |
+|-------|---|---|---|
+| **Layer 1: Planning** | Deterministic | **LLM-based** | Enhanced with semantic patterns |
+| **Layer 2: Tool Selection** | Deterministic | **LLM-based** | Learn tool effectiveness |
+| **Layer 3: Self-Recovery** | Deterministic | **LLM-based** | Learn recovery strategies |
+| **Layer 4: Evaluation** | Rules + Heuristics | **+ LLM Judgment** | Learn evaluation criteria |
+| **Layer 5: Runtime** | Sync single-worker | **Async support** | Distributed (future) |
+| **Layer 6: Memory** | Working + Episodic | **+ Async ops** | **+ Semantic Memory** |
+
+---
+
+## Backward Compatibility
+
+- ✅ Existing deterministic agents still work in v1.1.0
+- ✅ LLM agents are **opt-in** (requires LLMConfig)
+- ✅ Automatic fallback to deterministic on LLM failure
+- ✅ Zero breaking changes to public APIs
+- ✅ All 450+ tests continue to pass
+- ✅ Sync wrapper available for sync-only codebases
+
+---
+
+## LLM Provider Strategy
+
+### Open Source (Primary)
+- **Ollama**: Local deployment, free, no API keys
+  - Llama 2 (7B, 13B, 70B)
+  - Mistral 7B
+  - Neural Chat
+  - Orca
+
+### Proprietary (Optional Fallbacks)
+- **OpenAI**: GPT-3.5-turbo, GPT-4 (cost-based)
+- **Anthropic**: Claude 3 family (cost-based)
+- **HuggingFace**: Inference API (flexible)
+
+### Selection Strategy
+1. Try primary provider (Ollama by default)
+2. If unavailable → Fallback provider (OpenAI, Anthropic)
+3. If all LLM providers fail → Deterministic agent
+
+---
+
+## For More Details
+
+See `docs/llm-roadmap.md` for:
+- Detailed 12-phase implementation plan
+- GitHub milestone structure
+- Team requirements and estimates
+- Timeline and dependencies
+- Risk mitigation strategies
 
 ---
 

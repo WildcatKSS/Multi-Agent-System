@@ -1,0 +1,52 @@
+# GitHub CODEOWNERS - Automatic reviewer assignment for PRs
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# LLM Provider Layer
+/src/mas/llm/                       @backend-team
+/src/mas/llm/providers/             @backend-team
+
+# Agents
+/src/mas/agents/planner*.py         @backend-team
+/src/mas/agents/tool_selector*.py   @backend-team
+/src/mas/agents/evaluator*.py       @backend-team
+/src/mas/agents/self_healer*.py     @backend-team
+/src/mas/agents/factory.py          @backend-team
+
+# Memory Layer
+/src/mas/memory/                    @backend-team
+/src/mas/memory/semantic*.py        @backend-team
+
+# Observability
+/src/mas/observability/llm*.py      @backend-team
+/src/mas/observability/metrics.py   @backend-team
+
+# Runtime
+/src/mas/runtime/orchestrator.py    @backend-team
+
+# Configuration
+/src/mas/config/                    @backend-team
+
+# GUI/API (Phase 11+)
+/src/gui/                           @frontend-team
+/src/api/                           @frontend-team
+
+# Tests
+/tests/test_llm*.py                 @backend-team
+/tests/test_agents*.py              @backend-team
+/tests/fixtures/mock_llm.py         @backend-team
+/tests/fixtures/llm_cassettes.py    @backend-team
+
+# DevOps & CI/CD
+.github/                            @devops-team
+Dockerfile                          @devops-team
+docker-compose.yml                  @devops-team
+pyproject.toml                      @devops-team
+
+# Documentation
+docs/llm*.md                        @backend-team
+docs/multi-agent-system-reference.md @backend-team
+examples/llm*.py                    @backend-team
+
+# Root configuration
+CONTRIBUTING.md                     @backend-team
+.gitignore                          @devops-team
