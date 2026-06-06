@@ -1,6 +1,6 @@
 # Multi-Agent System
 
-[![License: Community](https://img.shields.io/badge/License-Community%20v2.0-red?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)](pyproject.toml)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Release: 2.0.0 (Dev)](https://img.shields.io/badge/release-2.0.0%20dev-orange?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System)
@@ -111,24 +111,7 @@ docker-compose up -d
 
 ### Governance
 - **[Security Policy](SECURITY.md)** — Vulnerability reporting
-- **[License](LICENSE)** — Community License v2.0 (Non-commercial, Copyleft)
-
-## License & Usage
-
-This project is licensed under the **Multi-Agent System Community License v2.0.0**.
-
-✅ **Permitted Use:**
-- Individual developers
-- Non-profit organizations
-- Educational institutions
-- Open-source projects (must remain open-source)
-
-❌ **Prohibited Use:**
-- Commercial use (SaaS, business operations, products, revenue-generating)
-- Proprietary derivatives or closed-source forks
-
-📄 For full details, see [LICENSE](LICENSE).  
-💼 For commercial licensing inquiries, contact the copyright holder.
+- **[License](LICENSE)** — MIT License
 
 ## Testing
 
@@ -190,6 +173,4 @@ src/mas/
 
 ## License
 
-Community License v2.0.0 — see [LICENSE](LICENSE) for details.
-
-**Non-commercial use only.** Individual developers, non-profit organizations, and educational institutions welcome. Commercial licensing available by arrangement.
+Released under the [MIT License](LICENSE).
