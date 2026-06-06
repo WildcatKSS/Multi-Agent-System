@@ -1,6 +1,7 @@
 """Heuristic-based scoring for evaluation."""
 
 from dataclasses import dataclass
+from typing import Any
 
 from mas.agents.evaluation.contracts import HeuristicScore
 
@@ -52,7 +53,7 @@ class HeuristicScorer:
         """
         self.config = config or HeuristicConfig()
 
-    def score(self, output: dict, context: dict | None = None) -> list[HeuristicScore]:
+    def score(self, output: dict[str, Any], context: dict[str, Any] | None = None) -> list[HeuristicScore]:
         """Score step output using heuristics.
 
         Args:
@@ -101,7 +102,7 @@ class HeuristicScorer:
 
         return round(total, 2)
 
-    def _score_completeness(self, output: dict) -> HeuristicScore:
+    def _score_completeness(self, output: dict[str, Any]) -> HeuristicScore:
         """Score completeness of output.
 
         Placeholder for MVP - always returns 0.8.
@@ -118,7 +119,7 @@ class HeuristicScorer:
             rationale="Output has all required fields",
         )
 
-    def _score_confidence(self, output: dict) -> HeuristicScore:
+    def _score_confidence(self, output: dict[str, Any]) -> HeuristicScore:
         """Score confidence in output.
 
         Placeholder for MVP - always returns 0.75.
@@ -135,7 +136,7 @@ class HeuristicScorer:
             rationale="Output meets quality standards",
         )
 
-    def _score_consistency(self, output: dict) -> HeuristicScore:
+    def _score_consistency(self, output: dict[str, Any]) -> HeuristicScore:
         """Score consistency of output.
 
         Placeholder for MVP - always returns 0.85.

@@ -2,7 +2,7 @@
 
 import pytest
 
-from mas.agents.recovery.retry_policy import RetryPolicy, RetryConfig
+from mas.agents.recovery.retry_policy import RetryConfig, RetryPolicy
 
 
 class TestRetryConfig:

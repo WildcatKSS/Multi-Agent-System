@@ -1,24 +1,23 @@
 """Input dispatcher routes inputs to appropriate adapters."""
 
 import logging
-from typing import Union
 
+from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.contracts import (
-    InputSource,
-    EmailInput,
     CalendarInput,
     DocumentInput,
+    EmailInput,
+    InputSource,
     TranscriptInput,
 )
-from mas.adapters.email_adapter import EmailAdapter
-from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.document_adapter import DocumentAdapter
+from mas.adapters.email_adapter import EmailAdapter
 from mas.adapters.transcript_adapter import TranscriptAdapter
 from mas.domain.task import Task
 
 logger = logging.getLogger(__name__)
 
-AnyInput = Union[EmailInput, CalendarInput, DocumentInput, TranscriptInput]
+AnyInput = EmailInput | CalendarInput | DocumentInput | TranscriptInput
 
 
 class InputDispatcher:

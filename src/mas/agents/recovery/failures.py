@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class FailureType(str, Enum):
@@ -56,7 +57,7 @@ class RecoverableError(Exception):
     message: str
     """Human-readable error message."""
 
-    context: dict | None = field(default=None)
+    context: dict[str, Any] | None = field(default=None)
     """Additional context about the failure (step_id, attempt, etc)."""
 
     def __post_init__(self) -> None:
@@ -79,7 +80,7 @@ class PermanentError(Exception):
     message: str
     """Human-readable error message."""
 
-    context: dict | None = field(default=None)
+    context: dict[str, Any] | None = field(default=None)
     """Additional context about the failure."""
 
     def __post_init__(self) -> None:
@@ -109,7 +110,7 @@ class StepFailure:
     attempt_number: int
     """Which attempt number this was (1-indexed)."""
 
-    context: dict | None = field(default=None)
+    context: dict[str, Any] | None = field(default=None)
     """Additional failure context."""
 
     def __post_init__(self) -> None:

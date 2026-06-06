@@ -1,6 +1,5 @@
 """Tests for workflow state machine."""
 
-import pytest
 
 from mas.workflow.state import WorkflowState, can_transition
 

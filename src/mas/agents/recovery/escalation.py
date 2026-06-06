@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 
 class EscalationReason(str, Enum):
@@ -36,7 +37,7 @@ class EscalationOutcome:
     message: str
     """Human-readable escalation message."""
 
-    context: dict = None
+    context: dict[str, Any] | None = None
     """Additional escalation context."""
 
     def __post_init__(self) -> None:

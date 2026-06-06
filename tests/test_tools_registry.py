@@ -2,8 +2,8 @@
 
 import pytest
 
-from mas.tools.registry import ToolRegistry
 from mas.tools.contract import Tool
+from mas.tools.registry import ToolRegistry
 
 
 def _dummy_handler(*args, **kwargs):

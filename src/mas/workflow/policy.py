@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from mas.workflow.state import WorkflowState, can_transition
 
@@ -14,7 +15,7 @@ class StateTransitionEvent:
     from_state: WorkflowState
     to_state: WorkflowState
     reason: str = ""
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class WorkflowStateMachine:
@@ -46,7 +47,7 @@ class WorkflowStateMachine:
         return self._events.copy()
 
     def transition(
-        self, new_state: WorkflowState, reason: str = "", metadata: dict | None = None
+        self, new_state: WorkflowState, reason: str = "", metadata: dict[str, Any] | None = None
     ) -> bool:
         """Attempt a state transition."""
         if not can_transition(self._state, new_state):
@@ -74,7 +75,7 @@ class PolicyEngine:
     NOTE: Single-threaded only. Add locking if used in async/multi-worker contexts.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize policy engine."""
         self._workflows: dict[str, WorkflowStateMachine] = {}
         self._global_events: list[StateTransitionEvent] = []
@@ -106,7 +107,7 @@ class PolicyEngine:
         workflow_id: str,
         new_state: WorkflowState,
         reason: str = "",
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> bool:
         """Transition a workflow through the policy layer."""
         machine = self.get_workflow(workflow_id)

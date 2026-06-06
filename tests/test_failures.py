@@ -4,8 +4,8 @@ import pytest
 
 from mas.agents.recovery.failures import (
     FailureType,
-    RecoverableError,
     PermanentError,
+    RecoverableError,
     StepFailure,
 )
 

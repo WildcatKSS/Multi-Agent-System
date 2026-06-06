@@ -1,6 +1,7 @@
 """Factory builders and helpers for E2E scenario construction."""
 
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from mas.domain.plan import Plan, Step
 from mas.domain.task import Task

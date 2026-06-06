@@ -1,8 +1,9 @@
 """Evaluation contracts and data structures."""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Any
 
 
 class RuleType(str, Enum):
@@ -34,7 +35,7 @@ class EvaluationRule:
     weight: float = 1.0
     """Weight in scoring (0-1)."""
 
-    predicate: Callable[[dict, dict], bool] | None = field(
+    predicate: Callable[[dict[str, Any], dict[str, Any]], bool] | None = field(
         default=None, hash=False, compare=False, repr=False
     )
     """Optional callable(output, context) -> bool. None means always pass.

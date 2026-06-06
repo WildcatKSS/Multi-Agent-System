@@ -3,10 +3,8 @@
 import contextvars
 import uuid
 from dataclasses import dataclass
-from typing import Optional
 
-
-_correlation_id_var: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
+_correlation_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "correlation_id", default=None
 )
 
@@ -65,7 +63,7 @@ def set_correlation_id(run_id: str, task_id: str = "", workflow_id: str = "") ->
     return context
 
 
-def get_correlation_id() -> Optional[str]:
+def get_correlation_id() -> str | None:
     """Get the current correlation run ID.
 
     Returns:

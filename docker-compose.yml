@@ -1,8 +1,6 @@
 # Multi-Agent System: Example Deployment
-# Version: 1.0.0
+# Version: 2.0.0
 # Usage: docker-compose up -d
-
-version: '3.8'
 
 services:
   # Multi-Agent System runtime
@@ -11,22 +9,23 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mas-runtime
-    image: mas:1.0.0
+    image: mas:2.0.0
     environment:
-      # Logging and observability
+      # Logging (read by the standard logging configuration).
       LOG_LEVEL: INFO
-      # Guardrails configuration
-      MAS_MAX_COST: "100.0"
-      MAS_MAX_DURATION_SECONDS: "300"
-      MAS_MAX_RETRIES_PER_RUN: "10"
-      MAS_MAX_PLAN_DEPTH: "20"
-      # Memory configuration (optional)
-      MAS_MEMORY_BACKEND: "redis"  # or "memory" for in-process
-      MAS_REDIS_HOST: "redis"
-      MAS_REDIS_PORT: "6379"
-      MAS_REDIS_DB: "0"
-    ports:
-      - "8000:8000"  # If using API server
+      # NOTE: The variables below are NOT yet read by the application.
+      # Guardrails are configured in code via GuardrailsConfig, and the Redis
+      # backend is configured via WorkingMemoryConfig. They are listed here as a
+      # placeholder for planned env-driven configuration — remove or wire up
+      # before relying on them.
+      # MAS_MAX_COST: "100.0"
+      # MAS_MAX_DURATION_SECONDS: "300"
+      # MAS_MAX_RETRIES_PER_RUN: "10"
+      # MAS_MAX_PLAN_DEPTH: "20"
+      # MAS_REDIS_HOST: "redis"
+      # MAS_REDIS_PORT: "6379"
+    # No ports are exposed: the project ships no network/API server yet
+    # (a REST API is on the v2.0.0 roadmap).
     depends_on:
       redis:
         condition: service_healthy

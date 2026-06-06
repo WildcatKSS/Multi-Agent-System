@@ -1,6 +1,7 @@
 """Top-level memory agent coordinating episodic and working memory."""
 
 import logging
+from typing import Any
 
 from mas.memory.contracts import EpisodicRecord
 from mas.memory.episodic_store import EpisodicStore, InMemoryEpisodicStore
@@ -52,7 +53,7 @@ class MemoryAgent:
         """
         return self.episodic_store.query_by_task(task_id)
 
-    def store_working(self, key: str, value: dict) -> None:
+    def store_working(self, key: str, value: dict[str, Any]) -> None:
         """Store a value in working memory.
 
         Args:
@@ -64,7 +65,7 @@ class MemoryAgent:
             return
         self.working_memory.set(key, value)
 
-    def retrieve_working(self, key: str) -> dict | None:
+    def retrieve_working(self, key: str) -> dict[str, Any] | None:
         """Retrieve a value from working memory.
 
         Args:
