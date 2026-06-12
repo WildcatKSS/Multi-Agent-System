@@ -33,6 +33,11 @@ from mas.llm.contracts import (
     TimeoutError,
     ValidationError,
 )
+from mas.llm.provider_registry import (
+    BUILTIN_PROVIDER_CONFIGS,
+    ProviderRegistry,
+    default_registry,
+)
 
 __all__ = [
     "Role",
@@ -50,6 +55,9 @@ __all__ = [
     "AnthropicConfig",
     "HFTask",
     "AnthropicVersion",
+    "ProviderRegistry",
+    "default_registry",
+    "BUILTIN_PROVIDER_CONFIGS",
     "LLMError",
     "ConfigError",
     "TimeoutError",
