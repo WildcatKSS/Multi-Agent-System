@@ -44,7 +44,8 @@ class LLMMessage:
             no metadata is attached.
 
     Raises:
-        ValueError: If ``role`` is not a valid role or ``content`` is empty.
+        ValueError: If ``role`` is not a valid role or ``content`` is empty or
+            whitespace-only.
     """
 
     role: Role

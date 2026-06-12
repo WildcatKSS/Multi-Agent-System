@@ -7,7 +7,6 @@ from typing import Any, get_args
 import pytest
 
 from mas.llm.contracts import (
-    _VALID_ROLES,
     APIError,
     AuthenticationError,
     ConfigError,
@@ -59,9 +58,14 @@ class TestLLMMessage:
         with pytest.raises(ValueError, match="content cannot be empty"):
             LLMMessage(role="user", content=content)
 
-    def test_valid_roles_derived_from_literal(self) -> None:
-        """The runtime role set matches the Role literal (no drift)."""
-        assert frozenset(get_args(Role)) == _VALID_ROLES
+    def test_every_declared_role_is_accepted(self) -> None:
+        """Every role in the Role literal is accepted by validation (no drift).
+
+        Guards against the runtime role set falling out of sync with the Role
+        type: if validation dropped a declared role it would raise here.
+        """
+        for role in get_args(Role):
+            assert LLMMessage(role=role, content="x").role == role
 
     def test_metadata_dict_makes_instance_unhashable(self) -> None:
         """A message carrying a metadata dict is not hashable (documented caveat)."""
