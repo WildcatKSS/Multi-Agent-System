@@ -13,8 +13,9 @@ of built-in provider names to their config types.
 """
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from mas.llm.config import (
     AnthropicConfig,
@@ -28,13 +29,15 @@ from mas.llm.contracts import ConfigError, LLMProvider
 _logger = logging.getLogger("mas.llm.registry")
 
 #: Canonical built-in provider names and the config type each consumes. The
-#: concrete provider classes are registered in Phase 2 (#55-#58).
-BUILTIN_PROVIDER_CONFIGS: dict[str, type[LLMConfig]] = {
-    "ollama": OllamaConfig,
-    "huggingface": HuggingFaceConfig,
-    "openai": OpenAIConfig,
-    "anthropic": AnthropicConfig,
-}
+#: concrete provider classes are registered in Phase 2 (#55-#58). Read-only.
+BUILTIN_PROVIDER_CONFIGS: Mapping[str, type[LLMConfig]] = MappingProxyType(
+    {
+        "ollama": OllamaConfig,
+        "huggingface": HuggingFaceConfig,
+        "openai": OpenAIConfig,
+        "anthropic": AnthropicConfig,
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -94,8 +97,13 @@ class ProviderRegistry:
             name: The provider name to remove.
 
         Raises:
-            KeyError: If ``name`` is not registered.
+            ConfigError: If ``name`` is not registered.
         """
+        if name not in self._providers:
+            raise ConfigError(
+                f"Cannot unregister unknown provider {name!r}. "
+                f"Available providers: {self.available() or 'none'}."
+            )
         del self._providers[name]
 
     def is_registered(self, name: str) -> bool:
@@ -108,6 +116,11 @@ class ProviderRegistry:
 
     def create(self, name: str, config: LLMConfig) -> LLMProvider:
         """Build the provider registered under ``name`` from ``config``.
+
+        The config is accepted if it is an *instance* of the provider's expected
+        config type (so a subclass config is allowed). This is intentionally more
+        lenient than :meth:`from_config`, which dispatches on the config's exact
+        type to avoid ambiguity; here the provider is named explicitly.
 
         Args:
             name: The registered provider name.

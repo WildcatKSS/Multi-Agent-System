@@ -85,7 +85,7 @@ class TestRegistration:
         assert not registry.is_registered("fake")
 
     def test_unregister_unknown_raises(self, registry: ProviderRegistry) -> None:
-        with pytest.raises(KeyError):
+        with pytest.raises(ConfigError, match="Cannot unregister unknown provider 'missing'"):
             registry.unregister("missing")
 
 
@@ -109,6 +109,16 @@ class TestCreate:
         registry.register("ollama", _FakeProvider, OllamaConfig)
         with pytest.raises(ConfigError, match="expects OllamaConfig, got OpenAIConfig"):
             registry.create("ollama", OpenAIConfig(model="gpt-4", api_key="k"))
+
+    def test_create_accepts_subclass_config(self, registry: ProviderRegistry) -> None:
+        # create() is intentionally lenient: a subclass of the expected config
+        # type is accepted (unlike from_config, which matches exactly).
+        class _SubOllamaConfig(OllamaConfig):
+            pass
+
+        registry.register("ollama", _FakeProvider, OllamaConfig)
+        provider = registry.create("ollama", _SubOllamaConfig(model="llama3"))
+        assert isinstance(provider, _FakeProvider)
 
 
 class TestFromConfig:

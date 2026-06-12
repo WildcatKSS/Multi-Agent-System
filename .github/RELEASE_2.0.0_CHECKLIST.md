@@ -1,7 +1,7 @@
 # v2.0.0 Release Checklist
 
 **Target Release Date**: 2026-12-31  
-**Current Status**: Development (Phase 1 ready to start)  
+**Current Status**: Development (Phase 1 in progress — provider abstraction landing)  
 **Branch**: `development` → merge to `main` at release
 
 > For full phase descriptions, timelines, and team assignments, see **[docs/llm-roadmap.md](../../docs/llm-roadmap.md)**.
@@ -12,12 +12,15 @@
 ## Phase Completion Status
 
 ### Phase 1: Provider Abstraction
-- [ ] LLM contracts created (`src/mas/llm/contracts.py`)
-- [ ] BaseProvider implemented with observability
-- [ ] LLMConfig dataclasses (Ollama, OpenAI, Anthropic)
-- [ ] ProviderRegistry factory
-- [ ] 40+ tests passing
-- [ ] No regressions in 450 existing tests
+- [x] LLM contracts created (`src/mas/llm/contracts.py`) — #47
+- [x] BaseProvider implemented with observability (`src/mas/llm/base.py`) — #48
+- [x] LLMConfig dataclasses (Ollama, HuggingFace, OpenAI, Anthropic) — #49
+- [x] ProviderRegistry factory (`src/mas/llm/provider_registry.py`) — #50
+- [ ] Error handling classes (#51)
+- [ ] Async support (#52)
+- [ ] Observability hooks (#53)
+- [ ] Validation tests (#54)
+- [ ] No regressions in existing tests
 - [ ] Code review approved
 
 ### Phase 2: LLM Providers
@@ -132,4 +135,4 @@ When all 10 core phases complete:
 ---
 
 **Last Updated**: 2026-06-06  
-**Next Review**: When Phase 1 starts
+**Next Review**: On Phase 1 completion (#51–#54 remaining)
