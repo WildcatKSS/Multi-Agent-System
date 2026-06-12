@@ -5,6 +5,11 @@ providers: immutable message/response data structures, the ``LLMProvider``
 abstract base class, and the LLM error hierarchy.
 """
 
+from mas.llm.base import (
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_TIMEOUT_SECONDS,
+    BaseProvider,
+)
 from mas.llm.contracts import (
     APIError,
     AuthenticationError,
@@ -24,6 +29,9 @@ __all__ = [
     "LLMMessage",
     "LLMResponse",
     "LLMProvider",
+    "BaseProvider",
+    "DEFAULT_TIMEOUT_SECONDS",
+    "DEFAULT_MAX_RETRIES",
     "LLMError",
     "ConfigError",
     "TimeoutError",
