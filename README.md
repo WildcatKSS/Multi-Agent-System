@@ -7,7 +7,7 @@
 
 A deterministic, autonomous multi-agent runtime that analyzes tasks, executes dependency-ordered plans, enforces runtime guardrails, recovers from failures, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
-> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration (Ollama, Claude, GPT, provider fallback) is the **planned v2.0.0 roadmap** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). It is **not yet implemented**.
+> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration (Ollama, Claude, GPT, provider fallback) is the **v2.0.0 roadmap, in progress** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). The Phase-1 provider contracts have landed; there is **no functional LLM provider yet**.
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
@@ -71,7 +71,7 @@ print(f"Success: {result.succeeded}")
 - Deterministic, rules + heuristics based evaluation
 
 **Quality**
-- 450 tests passing (~1s), 94% line/branch coverage
+- 497 tests passing (~1s), 94% line/branch coverage
 - Typed throughout — `mypy --strict` clean, `ruff` clean
 - Zero runtime dependencies (Redis optional)
 
@@ -120,7 +120,7 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 450 tests across unit, integration, E2E scenario, guardrail, and recovery suites.
+**Coverage**: 497 tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
 **Results**: 100% pass rate, ~1s total execution, 94% line/branch coverage.
 
@@ -130,6 +130,9 @@ ruff check src tests      # lint
 mypy                      # strict type check
 pytest --cov              # tests + coverage
 ```
+
+CI runs these gates across a Python 3.12 + 3.13 matrix and enforces a minimum
+coverage threshold (`pytest --cov-fail-under=90`).
 
 ## Architecture
 
