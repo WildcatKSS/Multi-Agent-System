@@ -2,11 +2,12 @@
 
 import asyncio
 import dataclasses
-from typing import Any
+from typing import Any, get_args
 
 import pytest
 
 from mas.llm.contracts import (
+    _VALID_ROLES,
     APIError,
     AuthenticationError,
     ConfigError,
@@ -15,6 +16,7 @@ from mas.llm.contracts import (
     LLMProvider,
     LLMResponse,
     RateLimitError,
+    Role,
     TimeoutError,
     ValidationError,
 )
@@ -50,6 +52,22 @@ class TestLLMMessage:
         """Empty content raises ValueError."""
         with pytest.raises(ValueError, match="content cannot be empty"):
             LLMMessage(role="user", content="")
+
+    @pytest.mark.parametrize("content", [" ", "\t", "\n", "  \n\t "])
+    def test_whitespace_only_content_rejected(self, content: str) -> None:
+        """Whitespace-only content raises ValueError."""
+        with pytest.raises(ValueError, match="content cannot be empty"):
+            LLMMessage(role="user", content=content)
+
+    def test_valid_roles_derived_from_literal(self) -> None:
+        """The runtime role set matches the Role literal (no drift)."""
+        assert frozenset(get_args(Role)) == _VALID_ROLES
+
+    def test_metadata_dict_makes_instance_unhashable(self) -> None:
+        """A message carrying a metadata dict is not hashable (documented caveat)."""
+        msg = LLMMessage(role="user", content="hi", metadata={"k": "v"})
+        with pytest.raises(TypeError):
+            hash(msg)
 
     def test_is_frozen(self) -> None:
         """Messages are immutable."""
@@ -120,6 +138,24 @@ class TestLLMResponse:
         """Negative latency_ms raises ValueError."""
         with pytest.raises(ValueError, match="latency_ms cannot be negative"):
             LLMResponse(message=self._assistant_msg(), tokens_used=0, model="m", latency_ms=-0.1)
+
+    def test_nan_latency_rejected(self) -> None:
+        """NaN latency_ms raises ValueError (would otherwise slip past the >= 0 check)."""
+        with pytest.raises(ValueError, match="latency_ms must be finite"):
+            LLMResponse(
+                message=self._assistant_msg(),
+                tokens_used=0,
+                model="m",
+                latency_ms=float("nan"),
+            )
+
+    @pytest.mark.parametrize("latency", [float("inf"), float("-inf")])
+    def test_infinite_latency_rejected(self, latency: float) -> None:
+        """Infinite latency_ms raises ValueError."""
+        with pytest.raises(ValueError, match="latency_ms must be finite"):
+            LLMResponse(
+                message=self._assistant_msg(), tokens_used=0, model="m", latency_ms=latency
+            )
 
     def test_empty_model_rejected(self) -> None:
         """Empty model raises ValueError."""

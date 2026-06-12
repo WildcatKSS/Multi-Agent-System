@@ -13,28 +13,33 @@ The data structures mirror the immutability and ``__post_init__`` validation
 patterns established by the domain contracts (``Task``, ``Plan``, ``Step``).
 """
 
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 Role = Literal["system", "user", "assistant"]
 """Valid roles for an :class:`LLMMessage`."""
 
-_VALID_ROLES: frozenset[str] = frozenset({"system", "user", "assistant"})
+#: Runtime set of valid roles, derived from :data:`Role` so the two cannot drift.
+_VALID_ROLES: frozenset[str] = frozenset(get_args(Role))
 
 
 @dataclass(frozen=True)
 class LLMMessage:
     """A single message in an LLM conversation.
 
-    Messages are immutable: once created they cannot be mutated. This mirrors
-    the immutable domain contracts and makes messages safe to share across
-    concurrent provider calls.
+    Messages are immutable: once created their attributes cannot be reassigned.
+    This mirrors the immutable domain contracts and makes messages safe to share
+    across concurrent provider calls. Note that immutability is shallow -- the
+    contents of a ``metadata`` dict are not deep-frozen, and an instance carrying
+    a ``metadata`` dict is not hashable.
 
     Attributes:
         role: The author of the message. One of ``"system"``, ``"user"`` or
             ``"assistant"``.
-        content: The textual content of the message. Must not be empty.
+        content: The textual content of the message. Must not be empty or
+            whitespace-only.
         metadata: Optional provider- or caller-specific metadata. ``None`` when
             no metadata is attached.
 
@@ -52,8 +57,8 @@ class LLMMessage:
             raise ValueError(
                 f"LLMMessage role must be one of {sorted(_VALID_ROLES)}, got {self.role!r}"
             )
-        if not self.content:
-            raise ValueError("LLMMessage content cannot be empty")
+        if not self.content or not self.content.strip():
+            raise ValueError("LLMMessage content cannot be empty or whitespace-only")
 
 
 @dataclass(frozen=True)
@@ -61,7 +66,9 @@ class LLMResponse:
     """The result of a single LLM provider call.
 
     Responses are immutable. They always carry an assistant-authored message
-    along with usage and timing metadata describing the call.
+    along with usage and timing metadata describing the call. As with
+    :class:`LLMMessage`, immutability is shallow: a ``metadata`` dict is not
+    deep-frozen and makes the instance non-hashable.
 
     Attributes:
         message: The assistant message returned by the provider. Its ``role``
@@ -69,14 +76,15 @@ class LLMResponse:
         tokens_used: Total number of tokens consumed by the call. Must be
             non-negative.
         model: Identifier of the model that produced the response.
-        latency_ms: Wall-clock latency of the call in milliseconds. Must be
-            non-negative.
+        latency_ms: Wall-clock latency of the call in milliseconds. Must be a
+            finite, non-negative number.
         metadata: Optional provider-specific metadata (e.g. finish reason,
             prompt/completion token split). ``None`` when not provided.
 
     Raises:
-        ValueError: If ``tokens_used`` or ``latency_ms`` is negative, ``model``
-            is empty, or ``message.role`` is not ``"assistant"``.
+        ValueError: If ``tokens_used`` is negative, ``latency_ms`` is negative
+            or non-finite (NaN/inf), ``model`` is empty, or ``message.role`` is
+            not ``"assistant"``.
     """
 
     message: LLMMessage
@@ -93,6 +101,11 @@ class LLMResponse:
             )
         if self.tokens_used < 0:
             raise ValueError(f"LLMResponse tokens_used cannot be negative, got {self.tokens_used}")
+        if math.isnan(self.latency_ms) or math.isinf(self.latency_ms):
+            raise ValueError(
+                f"LLMResponse latency_ms must be finite, got {self.latency_ms}. "
+                f"Ensure latency_ms is a real number >= 0.0."
+            )
         if self.latency_ms < 0:
             raise ValueError(f"LLMResponse latency_ms cannot be negative, got {self.latency_ms}")
         if not self.model:
