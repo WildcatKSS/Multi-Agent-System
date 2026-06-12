@@ -42,6 +42,9 @@ DEFAULT_TIMEOUT_SECONDS = 30.0
 #: Default maximum number of retries for transient failures.
 DEFAULT_MAX_RETRIES = 3
 
+#: Default upper bound on a single exponential-backoff delay, in seconds.
+DEFAULT_MAX_BACKOFF_SECONDS = 60.0
+
 _logger = logging.getLogger("mas.llm.base")
 
 
@@ -57,9 +60,13 @@ class BaseProvider(LLMProvider):
         timeout_seconds: Per-attempt timeout. Must be > 0. Defaults to 30s.
         max_retries: Maximum retries for transient failures. Must be >= 0.
             Defaults to 3 (so up to 4 attempts total).
+        max_backoff_seconds: Upper bound on a single backoff delay. Must be > 0.
+            Caps the ``2**n`` growth so a high ``max_retries`` cannot schedule an
+            unbounded wait. Defaults to 60s.
 
     Raises:
-        ValueError: If ``timeout_seconds`` <= 0 or ``max_retries`` < 0.
+        ValueError: If ``timeout_seconds`` <= 0, ``max_retries`` < 0, or
+            ``max_backoff_seconds`` <= 0.
         ConfigError: If ``validate_config`` rejects ``config``.
     """
 
@@ -69,15 +76,19 @@ class BaseProvider(LLMProvider):
         *,
         timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
         max_retries: int = DEFAULT_MAX_RETRIES,
+        max_backoff_seconds: float = DEFAULT_MAX_BACKOFF_SECONDS,
     ) -> None:
         if timeout_seconds <= 0:
             raise ValueError(f"timeout_seconds must be > 0, got {timeout_seconds}")
         if max_retries < 0:
             raise ValueError(f"max_retries cannot be negative, got {max_retries}")
+        if max_backoff_seconds <= 0:
+            raise ValueError(f"max_backoff_seconds must be > 0, got {max_backoff_seconds}")
 
         self.config = config
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
+        self.max_backoff_seconds = max_backoff_seconds
 
         # Validate config up front so misconfiguration fails fast, before any
         # network I/O. validate_config may raise ConfigError itself, or signal
@@ -168,34 +179,57 @@ class BaseProvider(LLMProvider):
         target_model = model or self.default_model
         attempt = 0
         while True:
+            start = time.monotonic()
             try:
-                return await self._attempt(messages, target_model, attempt, **kwargs)
+                response = await self._attempt(messages, target_model, **kwargs)
             except LLMError as err:
+                latency_ms = (time.monotonic() - start) * 1000.0
                 if err.transient and attempt < self.max_retries:
                     delay = (
                         err.retry_after_seconds
                         if err.retry_after_seconds is not None
-                        else 2**attempt
+                        else self._backoff_delay(attempt)
                     )
-                    self._log("llm_call_retry", target_model, attempt=attempt, error=err, delay=delay)
+                    self._log(
+                        "llm_call_retry",
+                        target_model,
+                        attempt=attempt,
+                        error=err,
+                        latency_ms=latency_ms,
+                        delay=delay,
+                    )
                     await self._sleep(delay)
                     attempt += 1
                     continue
-                self._log("llm_call_failed", target_model, attempt=attempt, error=err)
+                self._log(
+                    "llm_call_failed", target_model, attempt=attempt, error=err, latency_ms=latency_ms
+                )
                 raise
+
+            latency_ms = (time.monotonic() - start) * 1000.0
+            self._log(
+                "llm_call_succeeded",
+                target_model,
+                attempt=attempt,
+                response=response,
+                latency_ms=latency_ms,
+            )
+            return response
 
     # ------------------------------------------------------------------ #
     # Internals.
     # ------------------------------------------------------------------ #
 
-    async def _attempt(
-        self, messages: list[LLMMessage], model: str, attempt: int, **kwargs: Any
-    ) -> LLMResponse:
-        """Run a single attempt under the timeout, normalising errors."""
-        start = time.monotonic()
+    async def _attempt(self, messages: list[LLMMessage], model: str, **kwargs: Any) -> LLMResponse:
+        """Run a single attempt under the timeout, normalising errors.
+
+        Timing and logging are handled by :meth:`call`; this method only runs the
+        provider I/O under the timeout and classifies any failure as an
+        :class:`LLMError`.
+        """
         try:
             async with asyncio.timeout(self.timeout_seconds):
-                response = await self._invoke(messages, model, **kwargs)
+                return await self._invoke(messages, model, **kwargs)
         except TimeoutError as exc:
             # Builtin TimeoutError (raised by asyncio.timeout) -> our transient
             # provider TimeoutError. The contracts TimeoutError is imported as
@@ -216,9 +250,12 @@ class BaseProvider(LLMProvider):
                 transient=False,
             ) from exc
 
-        latency_ms = (time.monotonic() - start) * 1000.0
-        self._log("llm_call_succeeded", model, attempt=attempt, response=response, latency_ms=latency_ms)
-        return response
+    def _backoff_delay(self, attempt: int) -> float:
+        """Exponential backoff delay for ``attempt`` (0-based), capped.
+
+        Returns ``min(2**attempt, max_backoff_seconds)`` seconds.
+        """
+        return float(min(2**attempt, self.max_backoff_seconds))
 
     async def _sleep(self, seconds: float) -> None:
         """Sleep between retries. Isolated so tests can override it."""
@@ -230,8 +267,8 @@ class BaseProvider(LLMProvider):
         model: str,
         *,
         attempt: int,
+        latency_ms: float,
         response: LLMResponse | None = None,
-        latency_ms: float | None = None,
         error: LLMError | None = None,
         delay: float | None = None,
     ) -> None:
@@ -245,13 +282,12 @@ class BaseProvider(LLMProvider):
             "provider": self.name,
             "model": model,
             "attempt": attempt,
+            "latency_ms": latency_ms,
             "correlation_id": get_correlation_id(),
         }
         if response is not None:
             extra["tokens_used"] = response.tokens_used
             extra["cost_usd"] = self.estimate_cost_usd(response.tokens_used, model)
-        if latency_ms is not None:
-            extra["latency_ms"] = latency_ms
         if error is not None:
             extra["error_type"] = type(error).__name__
             extra["transient"] = error.transient

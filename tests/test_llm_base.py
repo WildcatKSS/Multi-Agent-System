@@ -120,6 +120,10 @@ class TestConstructorValidation:
         with pytest.raises(ValueError, match="max_retries cannot be negative"):
             _TestProvider(max_retries=-1)
 
+    def test_zero_max_backoff_rejected(self) -> None:
+        with pytest.raises(ValueError, match="max_backoff_seconds must be > 0"):
+            _TestProvider(max_backoff_seconds=0)
+
 
 class TestDefaults:
     def test_supports_streaming_default_false(self) -> None:
@@ -197,6 +201,15 @@ class TestRetryLogic:
             _run(provider.call([LLMMessage(role="user", content="hi")]))
         assert provider.invoke_calls == 4  # 1 initial + 3 retries
         assert provider.slept == [1, 2, 4]  # exponential backoff
+
+    def test_backoff_is_capped(self) -> None:
+        provider = _TestProvider(
+            effects=[RateLimitError("nope")], max_retries=4, max_backoff_seconds=3
+        )
+        with pytest.raises(RateLimitError):
+            _run(provider.call([LLMMessage(role="user", content="hi")]))
+        # 2**n = 1, 2, 4, 8 -> capped at 3 -> [1, 2, 3, 3]
+        assert provider.slept == [1, 2, 3, 3]
 
     def test_retry_after_seconds_overrides_backoff(self) -> None:
         provider = _TestProvider(
@@ -314,6 +327,7 @@ class TestLogging:
         assert failed[0].error_type == "ConfigError"
         assert failed[0].transient is False
         assert failed[0].levelno == logging.ERROR
+        assert isinstance(failed[0].latency_ms, float)  # latency logged on failure too
 
     def test_retry_logs_warning_with_delay(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.DEBUG, logger="mas.llm.base")
@@ -326,6 +340,7 @@ class TestLogging:
         assert retries[0].transient is True
         assert retries[0].retry_delay_seconds == 1
         assert retries[0].levelno == logging.WARNING
+        assert isinstance(retries[0].latency_ms, float)  # latency logged on retry too
 
 
 class TestCorrelationId:

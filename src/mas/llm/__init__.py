@@ -6,6 +6,7 @@ abstract base class, and the LLM error hierarchy.
 """
 
 from mas.llm.base import (
+    DEFAULT_MAX_BACKOFF_SECONDS,
     DEFAULT_MAX_RETRIES,
     DEFAULT_TIMEOUT_SECONDS,
     BaseProvider,
@@ -32,6 +33,7 @@ __all__ = [
     "BaseProvider",
     "DEFAULT_TIMEOUT_SECONDS",
     "DEFAULT_MAX_RETRIES",
+    "DEFAULT_MAX_BACKOFF_SECONDS",
     "LLMError",
     "ConfigError",
     "TimeoutError",
