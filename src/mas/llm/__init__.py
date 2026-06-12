@@ -11,6 +11,15 @@ from mas.llm.base import (
     DEFAULT_TIMEOUT_SECONDS,
     BaseProvider,
 )
+from mas.llm.config import (
+    AnthropicConfig,
+    AnthropicVersion,
+    HFTask,
+    HuggingFaceConfig,
+    LLMConfig,
+    OllamaConfig,
+    OpenAIConfig,
+)
 from mas.llm.contracts import (
     APIError,
     AuthenticationError,
@@ -34,6 +43,13 @@ __all__ = [
     "DEFAULT_TIMEOUT_SECONDS",
     "DEFAULT_MAX_RETRIES",
     "DEFAULT_MAX_BACKOFF_SECONDS",
+    "LLMConfig",
+    "OllamaConfig",
+    "HuggingFaceConfig",
+    "OpenAIConfig",
+    "AnthropicConfig",
+    "HFTask",
+    "AnthropicVersion",
     "LLMError",
     "ConfigError",
     "TimeoutError",
