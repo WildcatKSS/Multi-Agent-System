@@ -14,11 +14,13 @@ from mas.llm.contracts import (
     LLMProvider,
     LLMResponse,
     RateLimitError,
+    Role,
     TimeoutError,
     ValidationError,
 )
 
 __all__ = [
+    "Role",
     "LLMMessage",
     "LLMResponse",
     "LLMProvider",

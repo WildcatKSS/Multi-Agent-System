@@ -9,8 +9,10 @@ This module defines the foundational contracts for the LLM provider layer:
 - The :class:`LLMError` hierarchy: a structured set of exceptions that
   distinguish transient failures (safe to retry) from permanent ones.
 
-The data structures mirror the immutability and ``__post_init__`` validation
-patterns established by the domain contracts (``Task``, ``Plan``, ``Step``).
+The data structures follow the ``__post_init__`` validation pattern established
+by the domain contracts (``Task``, ``Plan``, ``Step``) and additionally make
+their instances immutable via ``frozen=True`` (the domain contracts themselves
+are mutable).
 """
 
 import math
@@ -29,11 +31,11 @@ _VALID_ROLES: frozenset[str] = frozenset(get_args(Role))
 class LLMMessage:
     """A single message in an LLM conversation.
 
-    Messages are immutable: once created their attributes cannot be reassigned.
-    This mirrors the immutable domain contracts and makes messages safe to share
-    across concurrent provider calls. Note that immutability is shallow -- the
-    contents of a ``metadata`` dict are not deep-frozen, and an instance carrying
-    a ``metadata`` dict is not hashable.
+    Messages are immutable: once created their attributes cannot be reassigned
+    (``frozen=True``), which makes them safe to share across concurrent provider
+    calls. Note that immutability is shallow -- the contents of a ``metadata``
+    dict are not deep-frozen, and an instance carrying a ``metadata`` dict is not
+    hashable.
 
     Attributes:
         role: The author of the message. One of ``"system"``, ``"user"`` or
