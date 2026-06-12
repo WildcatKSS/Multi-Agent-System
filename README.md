@@ -71,7 +71,7 @@ print(f"Success: {result.succeeded}")
 - Deterministic, rules + heuristics based evaluation
 
 **Quality**
-- 497 tests passing (~1s), 94% line/branch coverage
+- 500+ tests passing (~1-2s), ~95% line/branch coverage
 - Typed throughout — `mypy --strict` clean, `ruff` clean
 - Zero runtime dependencies (Redis optional)
 
@@ -120,9 +120,9 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 497 tests across unit, integration, E2E scenario, guardrail, and recovery suites.
+**Coverage**: 500+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
-**Results**: 100% pass rate, ~1s total execution, 94% line/branch coverage.
+**Results**: 100% pass rate, ~1-2s total execution, ~95% line/branch coverage.
 
 Quality gates (run locally or in CI):
 ```bash
@@ -149,6 +149,7 @@ from mas.guardrails import GuardrailsEngine
 ```
 src/mas/
 ├── agents/           # Planner, Tool Selection, Evaluator, Self-Healer
+├── llm/              # LLM provider abstraction (contracts, BaseProvider) — v2.0.0
 ├── runtime/          # Orchestrator + Executor Registry
 ├── guardrails/       # Cost, TTL, Retries, Depth enforcement
 ├── observability/    # Logging, Metrics, Correlation IDs
