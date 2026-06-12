@@ -1,8 +1,19 @@
 """LLM provider abstraction layer.
 
-This package defines the core contracts for interacting with language model
-providers: immutable message/response data structures, the ``LLMProvider``
-abstract base class, and the LLM error hierarchy.
+This package defines the building blocks for interacting with language model
+providers:
+
+- **Contracts** (:mod:`mas.llm.contracts`): immutable ``LLMMessage`` /
+  ``LLMResponse`` data structures, the ``LLMProvider`` ABC, and the ``LLMError``
+  hierarchy.
+- **BaseProvider** (:mod:`mas.llm.base`): a reusable provider base adding
+  timeout, retry with capped backoff, error classification, and structured
+  logging.
+- **Configs** (:mod:`mas.llm.config`): frozen, validated ``LLMConfig`` and
+  provider-specific configurations.
+- **Registry** (:mod:`mas.llm.provider_registry`): ``ProviderRegistry``, a
+  factory that builds providers from their config, plus a process-wide
+  ``default_registry``.
 """
 
 from mas.llm.base import (
@@ -33,6 +44,11 @@ from mas.llm.contracts import (
     TimeoutError,
     ValidationError,
 )
+from mas.llm.provider_registry import (
+    BUILTIN_PROVIDER_CONFIGS,
+    ProviderRegistry,
+    default_registry,
+)
 
 __all__ = [
     "Role",
@@ -50,6 +66,9 @@ __all__ = [
     "AnthropicConfig",
     "HFTask",
     "AnthropicVersion",
+    "ProviderRegistry",
+    "default_registry",
+    "BUILTIN_PROVIDER_CONFIGS",
     "LLMError",
     "ConfigError",
     "TimeoutError",
