@@ -191,11 +191,11 @@ class _DummyProvider(LLMProvider):
     def supports_streaming(self) -> bool:
         return False
 
-    async def call(self, messages: list[LLMMessage], model: str, **kwargs: Any) -> LLMResponse:
+    async def call(self, messages: list[LLMMessage], model: str = "", **kwargs: Any) -> LLMResponse:
         return LLMResponse(
             message=LLMMessage(role="assistant", content="ok"),
             tokens_used=1,
-            model=model,
+            model=model or "dummy-1",
             latency_ms=1.0,
         )
 

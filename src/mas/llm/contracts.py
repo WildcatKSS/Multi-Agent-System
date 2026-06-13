@@ -143,14 +143,16 @@ class LLMProvider(ABC):
     async def call(
         self,
         messages: list[LLMMessage],
-        model: str,
+        model: str = "",
         **kwargs: Any,
     ) -> LLMResponse:
         """Invoke the model with a conversation and return its response.
 
         Args:
             messages: The conversation history to send to the model.
-            model: The model identifier to use for this call.
+            model: The model identifier to use for this call. Defaults to
+                ``""``; implementations should fall back to their
+                :attr:`default_model` when the caller omits it.
             **kwargs: Provider-specific options (temperature, max tokens, ...).
 
         Returns:

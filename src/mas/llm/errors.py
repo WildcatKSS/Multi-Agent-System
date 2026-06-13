@@ -54,8 +54,6 @@ class ConfigError(LLMError):
     for missing/invalid config fields or an unknown/unregistered provider.
     """
 
-    default_transient = False
-
 
 class TimeoutError(LLMError):  # noqa: A001 - intentional domain-specific timeout error
     """Raised when a provider call exceeds its time budget.
@@ -85,8 +83,6 @@ class ValidationError(LLMError):
     invalid config values, or other malformed input detected before the call.
     """
 
-    default_transient = False
-
 
 class RateLimitError(LLMError):
     """Raised when a provider's rate limit is hit.
@@ -105,5 +101,3 @@ class AuthenticationError(LLMError):
     Permanent: retrying with the same credentials will fail again. Raise this for
     a missing/invalid API key or a rejected token.
     """
-
-    default_transient = False
