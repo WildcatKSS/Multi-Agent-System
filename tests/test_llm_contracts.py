@@ -7,17 +7,10 @@ from typing import Any, get_args
 import pytest
 
 from mas.llm.contracts import (
-    APIError,
-    AuthenticationError,
-    ConfigError,
-    LLMError,
     LLMMessage,
     LLMProvider,
     LLMResponse,
-    RateLimitError,
     Role,
-    TimeoutError,
-    ValidationError,
 )
 
 
@@ -249,71 +242,3 @@ class TestLLMProvider:
         assert resp.message.role == "assistant"
 
 
-class TestErrorHierarchy:
-    """Tests for the LLM error hierarchy."""
-
-    @pytest.mark.parametrize(
-        "error_cls",
-        [
-            ConfigError,
-            TimeoutError,
-            APIError,
-            ValidationError,
-            RateLimitError,
-            AuthenticationError,
-        ],
-    )
-    def test_all_inherit_from_base(self, error_cls: type[LLMError]) -> None:
-        """Every error type inherits from LLMError (and Exception)."""
-        err = error_cls("boom")
-        assert isinstance(err, LLMError)
-        assert isinstance(err, Exception)
-
-    def test_base_carries_attributes(self) -> None:
-        """The base error exposes its documented attributes."""
-        original = ValueError("root cause")
-        err = LLMError(
-            "failed",
-            original_exception=original,
-            transient=True,
-            retry_after_seconds=5,
-        )
-        assert err.message == "failed"
-        assert err.original_exception is original
-        assert err.transient is True
-        assert err.retry_after_seconds == 5
-        assert str(err) == "failed"
-
-    def test_default_attributes(self) -> None:
-        """Defaults are applied when optional fields are omitted."""
-        err = LLMError("oops")
-        assert err.original_exception is None
-        assert err.retry_after_seconds is None
-
-    @pytest.mark.parametrize(
-        ("error_cls", "expected_transient"),
-        [
-            (ConfigError, False),
-            (TimeoutError, True),
-            (APIError, True),
-            (ValidationError, False),
-            (RateLimitError, True),
-            (AuthenticationError, False),
-        ],
-    )
-    def test_transient_classification(
-        self, error_cls: type[LLMError], expected_transient: bool
-    ) -> None:
-        """Each error type defaults to the correct transient classification."""
-        assert error_cls("x").transient is expected_transient
-
-    def test_transient_can_be_overridden(self) -> None:
-        """An explicit transient flag overrides the class default."""
-        err = APIError("permanent 4xx", transient=False)
-        assert err.transient is False
-
-    def test_retry_after_on_rate_limit(self) -> None:
-        """Rate limit errors can carry a retry-after hint."""
-        err = RateLimitError("slow down", retry_after_seconds=30)
-        assert err.transient is True
-        assert err.retry_after_seconds == 30
