@@ -357,12 +357,15 @@ As of version 1.1.0, the architecture layers are implemented with LLM agents whi
 
 **MVP Implementation** (v1.0.0): Synchronous single-worker orchestrator
 
-**LLM Implementation** (v1.1.0 - Phase 4):
-- Extended Runtime with async support for non-blocking LLM calls
-- New method: `async def run_async(task: Task) -> RunResult`
+**Phase 1 delivery** (v2.0.0-dev — `development` branch):
+- `run_async()` delivered as part of Phase 1 (not Phase 4 as originally planned)
+- `async def run_async(task: Task) -> RunResult` added to `src/mas/runtime/orchestrator.py`
 - Preserves existing synchronous `run()` for backward compatibility
+- Handles async LLM provider calls without blocking via thread-pool executor
+
+**LLM Agent Integration** (v1.1.0 - Phase 4):
+- LLM-based agents (Planner, ToolSelector, Evaluator, SelfHealer) plug into existing async runtime
 - Prepares foundation for distributed execution (future phases)
-- Handles async LLM provider calls without blocking
 
 **Technologies**: Python asyncio
 
@@ -438,7 +441,7 @@ Improved Planning, Tool Selection, Evaluation
 - ✅ LLM agents are **opt-in** (requires LLMConfig)
 - ✅ Automatic fallback to deterministic on LLM failure
 - ✅ Zero breaking changes to public APIs
-- ✅ All 450+ tests continue to pass
+- ✅ All 650+ tests continue to pass (450 original + 200+ Phase 1 LLM tests)
 - ✅ Sync wrapper available for sync-only codebases
 
 ---

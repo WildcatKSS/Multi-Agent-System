@@ -7,7 +7,7 @@
 
 A deterministic, autonomous multi-agent runtime that analyzes tasks, executes dependency-ordered plans, enforces runtime guardrails, recovers from failures, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
-> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration (Ollama, Claude, GPT, provider fallback) is the **v2.0.0 roadmap, in progress** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). The Phase-1 provider contracts have landed; there is **no functional LLM provider yet**.
+> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration is the **v2.0.0 roadmap, in progress** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). **Phase 1 (Provider Abstraction) is complete**: contracts, BaseProvider, LLMConfig, ProviderRegistry, error hierarchy, async support, observability hooks, and 200+ tests. There is **no functional LLM provider yet** — concrete implementations (Ollama, OpenAI, etc.) are Phase 2.
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
@@ -71,16 +71,30 @@ print(f"Success: {result.succeeded}")
 - Deterministic, rules + heuristics based evaluation
 
 **Quality**
-- 500+ tests passing (~1-2s), ~95% line/branch coverage
+- 650+ tests passing (~1-2s), ~95% line/branch coverage
 - Typed throughout — `mypy --strict` clean, `ruff` clean
 - Zero runtime dependencies (Redis optional)
 
-### 🚧 Planned — v2.0.0 LLM roadmap (not yet implemented)
+### ✅ Phase 1 complete — LLM Provider Abstraction (`src/mas/llm/`)
 
-- LLM-powered Planner / ToolSelector / Evaluator / SelfHealer
-- Provider abstraction: Ollama → HuggingFace → OpenAI/Anthropic with fallback cascade
-- Semantic memory for pattern learning
-- See **[docs/llm-roadmap.md](docs/llm-roadmap.md)** for the 12-phase plan.
+Delivered in `development` (targeting v2.0.0):
+
+- **`contracts.py`** — `LLMMessage`, `LLMResponse`, `LLMProvider` ABC, `LLMError` hierarchy
+- **`errors.py`** — Full error taxonomy: `ConfigError`, `TimeoutError`, `APIError`, `ValidationError`, `RateLimitError`, `AuthenticationError` (transient vs permanent)
+- **`base.py`** — `BaseProvider`: timeout enforcement, exponential-backoff retry, structured logging with correlation IDs and cost metrics
+- **`config.py`** — `LLMConfig` + per-provider configs: `OllamaConfig`, `HuggingFaceConfig`, `OpenAIConfig`, `AnthropicConfig`
+- **`provider_registry.py`** — `ProviderRegistry` factory; `from_config()` dispatch; `default_registry`
+- **`runtime/orchestrator.py`** — `run_async()` for non-blocking LLM calls via thread-pool executor
+- **200+ tests** — 100% coverage of `src/mas/llm/`, `mypy --strict` clean on all test files
+
+### 🚧 Planned — v2.0.0 LLM roadmap (Phases 2–12, not yet implemented)
+
+- **Phase 2**: Concrete providers — Ollama, HuggingFace, OpenAI, Anthropic
+- **Phase 3**: Prompt template system (composable YAML templates per agent)
+- **Phase 4**: LLM-powered Planner / ToolSelector / Evaluator / SelfHealer
+- **Phase 7**: Cascade & fallback — Ollama → HuggingFace → OpenAI/Anthropic → deterministic
+- **Phase 10**: Semantic memory for pattern learning
+- See **[docs/llm-roadmap.md](docs/llm-roadmap.md)** for the full 12-phase plan.
 
 ## Installation Options
 
@@ -120,7 +134,7 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 500+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
+**Coverage**: 650+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
 **Results**: 100% pass rate, ~1-2s total execution, ~95% line/branch coverage.
 
@@ -149,7 +163,7 @@ from mas.guardrails import GuardrailsEngine
 ```
 src/mas/
 ├── agents/           # Planner, Tool Selection, Evaluator, Self-Healer
-├── llm/              # LLM provider abstraction (contracts, BaseProvider) — v2.0.0
+├── llm/              # Phase 1 complete: contracts, BaseProvider, config, registry, errors — v2.0.0
 ├── runtime/          # Orchestrator + Executor Registry
 ├── guardrails/       # Cost, TTL, Retries, Depth enforcement
 ├── observability/    # Logging, Metrics, Correlation IDs
