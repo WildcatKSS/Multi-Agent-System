@@ -298,12 +298,12 @@ class TestLogging:
         records = [r for r in caplog.records if r.message == "llm_call_succeeded"]
         assert len(records) == 1
         rec = records[0]
-        assert rec.provider == "test"
-        assert rec.model == "test-model"
-        assert rec.tokens_used == 42
-        assert rec.cost_usd == 0.0
-        assert isinstance(rec.latency_ms, float)
-        assert rec.attempt == 0
+        assert rec.provider == "test"  # type: ignore[attr-defined]
+        assert rec.model == "test-model"  # type: ignore[attr-defined]
+        assert rec.tokens_used == 42  # type: ignore[attr-defined]
+        assert rec.cost_usd == 0.0  # type: ignore[attr-defined]
+        assert isinstance(rec.latency_ms, float)  # type: ignore[attr-defined]
+        assert rec.attempt == 0  # type: ignore[attr-defined]
 
     def test_no_message_content_in_logs(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.DEBUG, logger="mas.llm.base")
@@ -324,10 +324,10 @@ class TestLogging:
 
         failed = [r for r in caplog.records if r.message == "llm_call_failed"]
         assert len(failed) == 1
-        assert failed[0].error_type == "ConfigError"
-        assert failed[0].transient is False
+        assert failed[0].error_type == "ConfigError"  # type: ignore[attr-defined]
+        assert failed[0].transient is False  # type: ignore[attr-defined]
         assert failed[0].levelno == logging.ERROR
-        assert isinstance(failed[0].latency_ms, float)  # latency logged on failure too
+        assert isinstance(failed[0].latency_ms, float)  # type: ignore[attr-defined]
 
     def test_retry_logs_warning_with_delay(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.DEBUG, logger="mas.llm.base")
@@ -336,11 +336,11 @@ class TestLogging:
 
         retries = [r for r in caplog.records if r.message == "llm_call_retry"]
         assert len(retries) == 1
-        assert retries[0].error_type == "RateLimitError"
-        assert retries[0].transient is True
-        assert retries[0].retry_delay_seconds == 1
+        assert retries[0].error_type == "RateLimitError"  # type: ignore[attr-defined]
+        assert retries[0].transient is True  # type: ignore[attr-defined]
+        assert retries[0].retry_delay_seconds == 1  # type: ignore[attr-defined]
         assert retries[0].levelno == logging.WARNING
-        assert isinstance(retries[0].latency_ms, float)  # latency logged on retry too
+        assert isinstance(retries[0].latency_ms, float)  # type: ignore[attr-defined]
 
 
 class TestCorrelationId:
@@ -356,7 +356,7 @@ class TestCorrelationId:
         _run(provider.call([LLMMessage(role="user", content="hi")]))
 
         records = [r for r in caplog.records if r.message == "llm_call_succeeded"]
-        assert records[0].correlation_id == "run-1234"
+        assert records[0].correlation_id == "run-1234"  # type: ignore[attr-defined]
 
     def test_correlation_id_none_when_unset(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.INFO, logger="mas.llm.base")
@@ -365,4 +365,4 @@ class TestCorrelationId:
         _run(provider.call([LLMMessage(role="user", content="hi")]))
 
         records = [r for r in caplog.records if r.message == "llm_call_succeeded"]
-        assert records[0].correlation_id is None
+        assert records[0].correlation_id is None  # type: ignore[attr-defined]

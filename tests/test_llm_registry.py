@@ -94,7 +94,7 @@ class TestCreate:
         registry.register("ollama", _FakeProvider, OllamaConfig)
         provider = registry.create("ollama", OllamaConfig(model="llama3"))
         assert isinstance(provider, _FakeProvider)
-        assert provider.config.model == "llama3"  # type: ignore[attr-defined]
+        assert provider.config.model == "llama3"
 
     def test_create_unknown_provider_raises(self, registry: ProviderRegistry) -> None:
         with pytest.raises(ConfigError, match="Unknown provider 'nope'"):
@@ -186,8 +186,8 @@ class TestLogging:
 
         records = [r for r in caplog.records if r.message == "provider_instantiated"]
         assert len(records) == 1
-        assert records[0].provider == "openai"
-        assert records[0].config_type == "OpenAIConfig"
+        assert records[0].provider == "openai"  # type: ignore[attr-defined]
+        assert records[0].config_type == "OpenAIConfig"  # type: ignore[attr-defined]
         for rec in caplog.records:
             for value in rec.__dict__.values():
                 assert "sk-SECRET" not in str(value)
