@@ -183,7 +183,7 @@ class TestRegistryToProvider:
         self, registry: ProviderRegistry
     ) -> None:
         provider = registry.create("fixed", OllamaConfig(model="llama3"))
-        resp = _run(provider.call(_msg(), "llama3"))
+        resp = _run(provider.call(_msg()))
         assert isinstance(resp, LLMResponse)
         assert resp.message.role == "assistant"
 
@@ -191,14 +191,14 @@ class TestRegistryToProvider:
         self, registry: ProviderRegistry
     ) -> None:
         provider = registry.from_config(OllamaConfig(model="mistral"))
-        resp = _run(provider.call(_msg(), "mistral"))
+        resp = _run(provider.call(_msg()))
         assert resp.model == "mistral"
 
     def test_registry_provider_uses_config_model_as_default(
         self, registry: ProviderRegistry
     ) -> None:
         provider = registry.create("fixed", OllamaConfig(model="codellama"))
-        resp = _run(provider.call(_msg(), "codellama"))
+        resp = _run(provider.call(_msg()))
         assert resp.model == "codellama"
 
     def test_invalid_config_raises_at_construction_not_call_time(self) -> None:
@@ -215,8 +215,8 @@ class TestRegistryToProvider:
         p1 = r.create("fixed", OllamaConfig(model="llama3"))
         p2 = r.create("openai-fixed", OpenAIConfig(model="gpt-4", api_key="sk-x"))
 
-        r1 = _run(p1.call(_msg(), "llama3"))
-        r2 = _run(p2.call(_msg(), "gpt-4"))
+        r1 = _run(p1.call(_msg()))
+        r2 = _run(p2.call(_msg()))
         assert r1.message.content == r2.message.content == "integrated"
 
 
@@ -290,7 +290,7 @@ class TestObservabilityAcrossComponents:
         r = ProviderRegistry()
         r.register("fixed", _FixedProvider, OllamaConfig)
         provider = r.create("fixed", OllamaConfig(model="llama3"))
-        _run(provider.call(_msg(), "llama3"))
+        _run(provider.call(_msg()))
 
         success_records = [
             rec for rec in caplog.records if rec.message == "llm_call_succeeded"
@@ -353,9 +353,7 @@ class TestAsyncIntegration:
         p2 = r.create("fixed", OllamaConfig(model="mistral"))
 
         async def _gather() -> list[LLMResponse]:
-            return list(
-                await asyncio.gather(p1.call(_msg(), "llama3"), p2.call(_msg(), "mistral"))
-            )
+            return list(await asyncio.gather(p1.call(_msg()), p2.call(_msg())))
 
         results = _run(_gather())
         models = {r.model for r in results}

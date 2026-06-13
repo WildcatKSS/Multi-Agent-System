@@ -47,6 +47,12 @@ DEFAULT_MAX_BACKOFF_SECONDS = 60.0
 
 _logger = logging.getLogger("mas.llm.base")
 
+#: Maps log-event names to logger methods; anything not listed defaults to INFO.
+_LOG_LEVEL = {
+    "llm_call_failed": _logger.error,
+    "llm_call_retry": _logger.warning,
+}
+
 
 class BaseProvider(LLMProvider):
     """Reusable base class for LLM providers.
@@ -294,9 +300,4 @@ class BaseProvider(LLMProvider):
         if delay is not None:
             extra["retry_delay_seconds"] = delay
 
-        if error is not None and event == "llm_call_failed":
-            _logger.error(event, extra=extra)
-        elif error is not None:
-            _logger.warning(event, extra=extra)
-        else:
-            _logger.info(event, extra=extra)
+        _LOG_LEVEL.get(event, _logger.info)(event, extra=extra)
