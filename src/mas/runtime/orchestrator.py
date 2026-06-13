@@ -12,6 +12,8 @@ Readiness / skip rules:
 - A step whose action has no registered handler is SKIPPED (no-op baseline).
 """
 
+import asyncio
+import functools
 import logging
 import math
 import time
@@ -187,6 +189,25 @@ class Runtime:
             guard_violation=ctx.guard_violation,
             metrics=metrics_collector.get_metrics(),
         )
+
+    async def run_async(self, task: Task, plan: Plan) -> RunResult:
+        """Async variant of :meth:`run` for callers in an async context.
+
+        Delegates to :meth:`run` via a thread-pool executor so the event loop
+        is not blocked. The ``ContextVar`` correlation context is automatically
+        copied to the executor thread by the event loop.
+
+        Args:
+            task: The task to execute.
+            plan: The plan containing steps to execute.
+
+        Returns:
+            A :class:`RunResult` summarising the execution.
+        """
+        fn = functools.partial(self.run, task, plan)
+        loop = asyncio.get_running_loop()
+        result: RunResult = await loop.run_in_executor(None, fn)
+        return result
 
     def _execute_steps(self, plan: Plan, ctx: _RunContext, metrics_collector: MetricsCollector) -> None:
         """Run the dependency-driven scheduling loop until no progress is made."""
