@@ -186,73 +186,28 @@ class LLMProvider(ABC):
         """
 
 
-class LLMError(Exception):
-    """Base class for all LLM provider errors.
+# The LLM error hierarchy lives in mas.llm.errors; re-exported here so that
+# existing ``from mas.llm.contracts import APIError`` style imports keep working.
+from mas.llm.errors import (  # noqa: E402 - re-export kept at module end for readability
+    APIError,
+    AuthenticationError,
+    ConfigError,
+    LLMError,
+    RateLimitError,
+    TimeoutError,
+    ValidationError,
+)
 
-    Attributes:
-        message: Human-readable description of the error.
-        original_exception: The underlying exception that triggered this error,
-            if any.
-        transient: Whether the error is transient (i.e. retrying the operation
-            may succeed). Permanent errors should not be retried.
-        retry_after_seconds: Suggested wait time before retrying, in seconds, or
-            ``None`` if no hint is available.
-    """
-
-    #: Default transient classification for this error type. Subclasses override
-    #: this to express whether the failure is generally safe to retry.
-    default_transient: bool = False
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        original_exception: Exception | None = None,
-        transient: bool | None = None,
-        retry_after_seconds: int | None = None,
-    ) -> None:
-        super().__init__(message)
-        self.message = message
-        self.original_exception = original_exception
-        self.transient = self.default_transient if transient is None else transient
-        self.retry_after_seconds = retry_after_seconds
-
-
-class ConfigError(LLMError):
-    """Raised when a provider is given an invalid configuration. Permanent."""
-
-    default_transient = False
-
-
-class TimeoutError(LLMError):  # noqa: A001 - intentional domain-specific timeout error
-    """Raised when a provider call exceeds its time budget. Transient."""
-
-    default_transient = True
-
-
-class APIError(LLMError):
-    """Raised when a provider's API returns an error response.
-
-    Transient by default, since many API errors (5xx, network blips) resolve on
-    retry. Callers may override ``transient`` for known-permanent responses.
-    """
-
-    default_transient = True
-
-
-class ValidationError(LLMError):
-    """Raised when input to a provider fails validation. Permanent."""
-
-    default_transient = False
-
-
-class RateLimitError(LLMError):
-    """Raised when a provider's rate limit is hit. Transient."""
-
-    default_transient = True
-
-
-class AuthenticationError(LLMError):
-    """Raised when provider credentials are invalid or rejected. Permanent."""
-
-    default_transient = False
+__all__ = [
+    "Role",
+    "LLMMessage",
+    "LLMResponse",
+    "LLMProvider",
+    "LLMError",
+    "ConfigError",
+    "TimeoutError",
+    "APIError",
+    "ValidationError",
+    "RateLimitError",
+    "AuthenticationError",
+]
