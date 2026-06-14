@@ -4,9 +4,10 @@
 #
 # Steps:
 #   1. Install system packages from system-packages.txt (Debian/Ubuntu apt).
-#   2. Verify Python 3.12+ is available.
-#   3. Create a virtual environment (venv/).
-#   4. Install the package with dev extras: pip install -e ".[dev]".
+#   2. Install Ollama (local LLM server) via the official installer.
+#   3. Verify Python 3.12+ is available.
+#   4. Create a virtual environment (venv/).
+#   5. Install the package with dev extras: pip install -e ".[dev]".
 #
 # System packages are declared in system-packages.txt; Python deps in pyproject.toml.
 # The script is idempotent and can be re-run safely.
@@ -85,7 +86,32 @@ install_system_deps() {
     fi
 }
 
-# --- Step 2: verify Python 3.12+ ---
+# --- Step 2: Ollama ---
+install_ollama() {
+    info "Checking for Ollama..."
+
+    if command -v ollama >/dev/null 2>&1; then
+        info "Ollama already installed: $(ollama --version 2>&1 | head -1)"
+        return 0
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        warn "curl not found — cannot install Ollama automatically."
+        warn "Install manually: https://ollama.com/download"
+        return 0
+    fi
+
+    info "Installing Ollama via official installer..."
+    if ! curl -fsSL https://ollama.com/install.sh | sh; then
+        warn "Ollama installation failed."
+        warn "Install manually: https://ollama.com/download"
+        return 0
+    fi
+
+    info "Ollama installed: $(ollama --version 2>&1 | head -1)"
+}
+
+# --- Step 3: verify Python 3.12+ ---
 check_python() {
     info "Checking for Python 3.12+..."
 
@@ -112,7 +138,7 @@ check_python() {
     exit 1
 }
 
-# --- Step 3: virtual environment ---
+# --- Step 4: virtual environment ---
 create_venv() {
     if [ -d "$VENV_DIR" ]; then
         info "Reusing existing venv: $VENV_DIR"
@@ -122,7 +148,7 @@ create_venv() {
     fi
 }
 
-# --- Step 4: Python dependencies ---
+# --- Step 5: Python dependencies ---
 install_python_deps() {
     if [ ! -f "$SCRIPT_DIR/pyproject.toml" ]; then
         err "pyproject.toml not found in $SCRIPT_DIR. Are you running from the project root?"
@@ -145,11 +171,17 @@ Activate the environment and run the tests:
     pytest -v
     python -m mas --version
 
+To start Ollama and pull a model:
+
+    ollama serve            # start the server (or: systemctl start ollama)
+    ollama pull llama2      # download the default model
+
 EOF
 }
 
 main() {
     install_system_deps
+    install_ollama
     check_python
     create_venv
     install_python_deps
