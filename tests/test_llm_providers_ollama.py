@@ -12,7 +12,7 @@ import pytest
 from mas.llm.config import HuggingFaceConfig, OllamaConfig
 from mas.llm.contracts import LLMMessage, LLMResponse
 from mas.llm.errors import APIError, AuthenticationError, ConfigError, RateLimitError, ValidationError
-from mas.llm.providers.ollama import OllamaProvider, _map_http_error
+from mas.llm.providers.ollama import OllamaProvider, _build_headers, _map_http_error
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -21,8 +21,21 @@ from mas.llm.providers.ollama import OllamaProvider, _map_http_error
 _Transport = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
 
 
-def _config(model: str = "llama2", base_url: str = "http://localhost:11434") -> OllamaConfig:
-    return OllamaConfig(model=model, base_url=base_url)
+def _config(
+    model: str = "llama2",
+    base_url: str = "http://localhost:11434",
+    *,
+    api_key: str | None = None,
+    timeout_seconds: int = 30,
+    max_retries: int = 3,
+) -> OllamaConfig:
+    return OllamaConfig(
+        model=model,
+        base_url=base_url,
+        api_key=api_key,
+        timeout_seconds=timeout_seconds,
+        max_retries=max_retries,
+    )
 
 
 def _make_transport(response: dict[str, Any]) -> _Transport:
@@ -86,10 +99,15 @@ class TestOllamaProviderConstruction:
         with pytest.raises(ConfigError):
             OllamaProvider(HuggingFaceConfig(model="x", api_key="k"))  # type: ignore[arg-type]
 
-    def test_timeout_forwarded_to_base(self) -> None:
-        cfg = _config()
+    def test_timeout_from_config_honored(self) -> None:
+        cfg = _config(timeout_seconds=5)
         provider = OllamaProvider(cfg, _transport=_make_transport(_DEFAULT_RESPONSE))
-        assert provider.timeout_seconds == cfg.timeout_seconds
+        assert provider.timeout_seconds == 5
+
+    def test_max_retries_from_config_honored(self) -> None:
+        cfg = _config(max_retries=0)
+        provider = OllamaProvider(cfg, _transport=_make_transport(_DEFAULT_RESPONSE))
+        assert provider.max_retries == 0
 
 
 # ---------------------------------------------------------------------------
@@ -202,11 +220,34 @@ class TestOllamaProviderCall:
         assert resp.metadata is not None
         assert resp.metadata["done"] is True
 
-    def test_kwargs_forwarded_to_payload(self) -> None:
+    def test_generation_kwargs_nested_under_options(self) -> None:
         transport, calls = _capture_transport()
         provider = OllamaProvider(_config(), _transport=transport)
-        _run(provider.call(_MESSAGES, temperature=0.7))
-        assert calls[0][1]["temperature"] == pytest.approx(0.7)
+        _run(provider.call(_MESSAGES, temperature=0.7, top_p=0.9))
+        assert calls[0][1]["options"]["temperature"] == pytest.approx(0.7)
+        assert calls[0][1]["options"]["top_p"] == pytest.approx(0.9)
+        assert "temperature" not in calls[0][1]
+
+    def test_top_level_fields_not_nested(self) -> None:
+        transport, calls = _capture_transport()
+        provider = OllamaProvider(_config(), _transport=transport)
+        _run(provider.call(_MESSAGES, format="json", keep_alive="5m"))
+        assert calls[0][1]["format"] == "json"
+        assert calls[0][1]["keep_alive"] == "5m"
+        assert "options" not in calls[0][1]
+
+    def test_caller_supplied_options_dict_merged(self) -> None:
+        transport, calls = _capture_transport()
+        provider = OllamaProvider(_config(), _transport=transport)
+        _run(provider.call(_MESSAGES, options={"seed": 42}, temperature=0.5))
+        assert calls[0][1]["options"]["seed"] == 42
+        assert calls[0][1]["options"]["temperature"] == pytest.approx(0.5)
+
+    def test_content_whitespace_preserved(self) -> None:
+        response = {**_DEFAULT_RESPONSE, "message": {"role": "assistant", "content": "  hello\n"}}
+        provider = OllamaProvider(_config(), _transport=_make_transport(response))
+        resp = _run(provider.call(_MESSAGES))
+        assert resp.message.content == "  hello\n"
 
 
 # ---------------------------------------------------------------------------
@@ -336,3 +377,43 @@ class TestMapHttpError:
         err = _map_http_error(exc)
         assert isinstance(err, RateLimitError)
         assert err.retry_after_seconds is None
+
+
+# ---------------------------------------------------------------------------
+# _build_headers (unit)
+# ---------------------------------------------------------------------------
+
+
+class TestBuildHeaders:
+    def test_no_api_key_returns_content_type_only(self) -> None:
+        headers = _build_headers(None)
+        assert headers == {"Content-Type": "application/json"}
+        assert "Authorization" not in headers
+
+    def test_empty_api_key_returns_content_type_only(self) -> None:
+        headers = _build_headers("")
+        assert "Authorization" not in headers
+
+    def test_api_key_adds_bearer_header(self) -> None:
+        headers = _build_headers("sk-secret")
+        assert headers["Authorization"] == "Bearer sk-secret"
+        assert headers["Content-Type"] == "application/json"
+
+
+# ---------------------------------------------------------------------------
+# default_registry integration (fix 3)
+# ---------------------------------------------------------------------------
+
+
+class TestDefaultRegistryIntegration:
+    def test_ollama_registered_when_mas_llm_imported(self) -> None:
+        from mas.llm import default_registry
+
+        assert default_registry.is_registered("ollama")
+
+    def test_from_config_builds_ollama_provider(self) -> None:
+        from mas.llm import default_registry
+        from mas.llm.config import OllamaConfig
+
+        provider = default_registry.from_config(OllamaConfig(model="llama2"))
+        assert provider.name == "ollama"

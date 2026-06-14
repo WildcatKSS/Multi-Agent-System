@@ -50,6 +50,9 @@ from mas.llm.provider_registry import (
     default_registry,
 )
 
+# Import providers last so they self-register with default_registry on package import.
+from mas.llm.providers.ollama import OllamaProvider  # noqa: E402
+
 __all__ = [
     "Role",
     "LLMMessage",
@@ -66,6 +69,7 @@ __all__ = [
     "AnthropicConfig",
     "HFTask",
     "AnthropicVersion",
+    "OllamaProvider",
     "ProviderRegistry",
     "default_registry",
     "BUILTIN_PROVIDER_CONFIGS",
