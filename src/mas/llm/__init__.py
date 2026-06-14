@@ -51,6 +51,7 @@ from mas.llm.provider_registry import (
 )
 
 # Import providers last so they self-register with default_registry on package import.
+from mas.llm.providers.anthropic import AnthropicProvider  # noqa: E402
 from mas.llm.providers.huggingface import HuggingFaceProvider  # noqa: E402
 from mas.llm.providers.ollama import OllamaProvider  # noqa: E402
 from mas.llm.providers.openai import OpenAIProvider  # noqa: E402
@@ -71,6 +72,7 @@ __all__ = [
     "AnthropicConfig",
     "HFTask",
     "AnthropicVersion",
+    "AnthropicProvider",
     "HuggingFaceProvider",
     "OllamaProvider",
     "OpenAIProvider",
