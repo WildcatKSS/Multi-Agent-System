@@ -7,6 +7,7 @@ Import the provider you need explicitly, or import ``mas.llm.providers`` to
 register all built-ins at once.
 """
 
+from mas.llm.providers.huggingface import HuggingFaceProvider
 from mas.llm.providers.ollama import OllamaProvider
 
-__all__ = ["OllamaProvider"]
+__all__ = ["HuggingFaceProvider", "OllamaProvider"]
