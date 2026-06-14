@@ -9,5 +9,6 @@ register all built-ins at once.
 
 from mas.llm.providers.huggingface import HuggingFaceProvider
 from mas.llm.providers.ollama import OllamaProvider
+from mas.llm.providers.openai import OpenAIProvider
 
-__all__ = ["HuggingFaceProvider", "OllamaProvider"]
+__all__ = ["HuggingFaceProvider", "OllamaProvider", "OpenAIProvider"]
