@@ -50,7 +50,7 @@ class TranscriptAdapter:
             "transcript_title": transcript.title,
             "source_type_detail": transcript.source_type,
             "duration_seconds": transcript.duration_seconds,
-            "speaker_count": len(set(speaker for speaker, _ in transcript.speaker_turns)),
+            "speaker_count": len({speaker for speaker, _ in transcript.speaker_turns}),
             "content_length": len(transcript.content),
         }
 

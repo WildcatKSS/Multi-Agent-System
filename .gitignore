@@ -32,3 +32,8 @@ metrics/
 # Temporary
 *.tmp
 .env.local
+
+# Coverage
+.coverage
+htmlcov/
+*.py,cover

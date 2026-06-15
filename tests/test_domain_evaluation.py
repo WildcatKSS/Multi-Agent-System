@@ -2,7 +2,7 @@
 
 import pytest
 
-from mas.domain.evaluation import Evaluation, EvaluationCriteria
+from mas.domain.evaluation import Evaluation
 
 
 class TestEvaluation:

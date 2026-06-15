@@ -8,6 +8,7 @@ and are skipped by the runtime. This mirrors the future Tool Registry (#6).
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 from mas.domain.plan import Step
 
@@ -17,7 +18,7 @@ class StepResult:
     """Outcome of executing a single step."""
 
     success: bool
-    output: dict = field(default_factory=dict)
+    output: dict[str, Any] = field(default_factory=dict)
     error: str = ""
 
 

@@ -1,24 +1,23 @@
 """Input dispatcher routes inputs to appropriate adapters."""
 
 import logging
-from typing import Union
 
+from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.contracts import (
-    InputSource,
-    EmailInput,
     CalendarInput,
     DocumentInput,
+    EmailInput,
+    InputSource,
     TranscriptInput,
 )
-from mas.adapters.email_adapter import EmailAdapter
-from mas.adapters.calendar_adapter import CalendarAdapter
 from mas.adapters.document_adapter import DocumentAdapter
+from mas.adapters.email_adapter import EmailAdapter
 from mas.adapters.transcript_adapter import TranscriptAdapter
 from mas.domain.task import Task
 
 logger = logging.getLogger(__name__)
 
-AnyInput = Union[EmailInput, CalendarInput, DocumentInput, TranscriptInput]
+AnyInput = EmailInput | CalendarInput | DocumentInput | TranscriptInput
 
 
 class InputDispatcher:
@@ -47,7 +46,7 @@ class InputDispatcher:
         Raises:
             ValueError: If input source is unknown.
         """
-        if input_source not in InputSource.__members__.values():
+        if not isinstance(input_source, InputSource):
             raise ValueError(f"Unknown input source: {input_source}")
 
         logger.debug(
@@ -75,5 +74,4 @@ class InputDispatcher:
                 raise ValueError(f"Expected TranscriptInput, got {type(input_data)}")
             return self.transcript_adapter.adapt(input_data, task_id)
 
-        else:
-            raise ValueError(f"Unknown input source: {input_source}")
+        raise ValueError(f"Unknown input source: {input_source}")

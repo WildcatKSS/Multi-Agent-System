@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class MemoryType(str, Enum):
@@ -21,7 +22,7 @@ class MemoryEntry:
     id: str
     """Unique identifier for this memory entry."""
 
-    content: dict
+    content: dict[str, Any]
     """The memory content (arbitrary dict)."""
 
     memory_type: MemoryType
@@ -36,7 +37,7 @@ class MemoryEntry:
     timestamp: str
     """ISO 8601 timestamp when this entry was created."""
 
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Optional metadata about this entry."""
 
     def __post_init__(self) -> None:

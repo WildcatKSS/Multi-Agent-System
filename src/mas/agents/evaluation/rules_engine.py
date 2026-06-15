@@ -1,5 +1,7 @@
 """Deterministic rules engine for evaluation."""
 
+from typing import Any
+
 from mas.agents.evaluation.contracts import EvaluationRule, RuleType
 
 
@@ -19,8 +21,8 @@ class DeterministicRulesEngine:
         self.rules.append(rule)
 
     def evaluate(
-        self, output: dict, context: dict | None = None
-    ) -> tuple[bool, dict]:
+        self, output: dict[str, Any], context: dict[str, Any] | None = None
+    ) -> tuple[bool, dict[str, Any]]:
         """Evaluate all rules against step output.
 
         Args:
@@ -56,7 +58,7 @@ class DeterministicRulesEngine:
         return passed, results
 
     def _evaluate_rule(
-        self, rule: EvaluationRule, output: dict, context: dict
+        self, rule: EvaluationRule, output: dict[str, Any], context: dict[str, Any]
     ) -> bool:
         """Evaluate a single rule.
 

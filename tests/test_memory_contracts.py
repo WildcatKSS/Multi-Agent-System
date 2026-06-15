@@ -3,9 +3,9 @@
 import pytest
 
 from mas.memory.contracts import (
-    MemoryType,
-    MemoryEntry,
     EpisodicRecord,
+    MemoryEntry,
+    MemoryType,
 )
 
 

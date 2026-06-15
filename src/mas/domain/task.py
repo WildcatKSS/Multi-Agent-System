@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class TaskStatus(Enum):
@@ -29,9 +30,9 @@ class Task:
     description: str
     goal: str
     status: TaskStatus = TaskStatus.PENDING
-    context: dict = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     constraints: list[str] = field(default_factory=list)
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate task on creation."""

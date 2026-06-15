@@ -1,8 +1,6 @@
 # Multi-Agent System: Example Deployment
-# Version: 1.0.0
+# Version: 2.0.0
 # Usage: docker-compose up -d
-
-version: '3.8'
 
 services:
   # Multi-Agent System runtime
@@ -11,22 +9,27 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mas-runtime
-    image: mas:1.0.0
+    image: mas:2.0.0
     environment:
-      # Logging and observability
+      # Logging (read by the standard logging configuration).
       LOG_LEVEL: INFO
-      # Guardrails configuration
-      MAS_MAX_COST: "100.0"
-      MAS_MAX_DURATION_SECONDS: "300"
-      MAS_MAX_RETRIES_PER_RUN: "10"
-      MAS_MAX_PLAN_DEPTH: "20"
-      # Memory configuration (optional)
-      MAS_MEMORY_BACKEND: "redis"  # or "memory" for in-process
-      MAS_REDIS_HOST: "redis"
-      MAS_REDIS_PORT: "6379"
-      MAS_REDIS_DB: "0"
-    ports:
-      - "8000:8000"  # If using API server
+      # Redis password — must match the value configured on the redis service.
+      # Pass it to WorkingMemoryConfig(password=os.environ["REDIS_PASSWORD"])
+      # in your application code to authenticate against the Redis instance.
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev-change-in-production}
+      # NOTE: The variables below are NOT yet read by the application.
+      # Guardrails are configured in code via GuardrailsConfig, and the Redis
+      # backend is configured via WorkingMemoryConfig. They are listed here as a
+      # placeholder for planned env-driven configuration — remove or wire up
+      # before relying on them.
+      # MAS_MAX_COST: "100.0"
+      # MAS_MAX_DURATION_SECONDS: "300"
+      # MAS_MAX_RETRIES_PER_RUN: "10"
+      # MAS_MAX_PLAN_DEPTH: "20"
+      # MAS_REDIS_HOST: "redis"
+      # MAS_REDIS_PORT: "6379"
+    # No ports are exposed: the project ships no network/API server yet
+    # (a REST API is on the v2.0.0 roadmap).
     depends_on:
       redis:
         condition: service_healthy
@@ -44,16 +47,21 @@ services:
   redis:
     image: redis:7-alpine
     container_name: mas-redis
+    # Bind to loopback only — not exposed on external interfaces.
+    # Set REDIS_PASSWORD in your environment before running docker-compose.
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev-change-in-production}
     volumes:
       - redis-data:/data
     networks:
       - mas-network
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-dev-change-in-production}"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # $$REDIS_PASSWORD is expanded at container runtime from the env var above.
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping"]
       interval: 10s
       timeout: 5s
       retries: 3

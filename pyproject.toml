@@ -4,16 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mas"
-version = "1.0.0"
-description = "Multi-Agent System: Generic autonomous agent orchestration framework"
+version = "2.0.0"
+description = "Multi-Agent System: Fully agentic autonomous agent orchestration powered by LLMs"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 authors = [{ name = "WildcatKSS" }]
-keywords = ["multi-agent", "mas", "mvp"]
+keywords = ["multi-agent", "mas", "agent", "orchestration", "llm"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -23,7 +23,13 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "fakeredis>=2.0"]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5.0",
+    "fakeredis>=2.0",
+    "mypy>=1.10",
+    "ruff>=0.5",
+]
 redis = ["redis>=5.0"]
 
 [project.scripts]
@@ -39,3 +45,26 @@ packages = ["src/mas"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+# UP042: str+Enum is intentional for JSON-serializable enums (kept for stable .value behavior).
+ignore = ["UP042"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["mas"]
+mypy_path = "src"
+
+[tool.coverage.run]
+source = ["src/mas"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true

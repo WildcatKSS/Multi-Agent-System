@@ -3,10 +3,10 @@
 import pytest
 
 from mas.adapters.contracts import (
-    InputSource,
-    EmailInput,
     CalendarInput,
     DocumentInput,
+    EmailInput,
+    InputSource,
     TranscriptInput,
 )
 from mas.adapters.input_dispatcher import InputDispatcher

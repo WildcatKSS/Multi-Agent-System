@@ -3,7 +3,6 @@
 import pytest
 
 from mas.agents.planner import Planner, PlannerConfig
-from mas.domain.plan import Step
 from mas.domain.task import Task
 
 

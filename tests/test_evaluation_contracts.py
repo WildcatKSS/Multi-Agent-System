@@ -3,10 +3,10 @@
 import pytest
 
 from mas.agents.evaluation.contracts import (
-    RuleType,
+    EvaluationReport,
     EvaluationRule,
     HeuristicScore,
-    EvaluationReport,
+    RuleType,
 )
 
 

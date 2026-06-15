@@ -12,10 +12,11 @@ Readiness / skip rules:
 - A step whose action has no registered handler is SKIPPED (no-op baseline).
 """
 
+import asyncio
+import functools
 import logging
 import math
 import time
-import uuid
 from dataclasses import dataclass, field
 
 from mas.domain.plan import Plan, Step, StepStatus
@@ -101,6 +102,7 @@ class Runtime:
         if self.guardrails:
             result = self.guardrails.check_plan(plan)
             if not result.passed:
+                assert result.violation is not None
                 logger.warning(f"Plan rejected by guardrails: {result.violation.message}")
                 metrics_collector.set_guard_violation(result.violation.guard_type.value)
                 metrics_collector.set_end_time(time.monotonic())
@@ -188,6 +190,23 @@ class Runtime:
             metrics=metrics_collector.get_metrics(),
         )
 
+    async def run_async(self, task: Task, plan: Plan) -> RunResult:
+        """Async variant of :meth:`run` for callers in an async context.
+
+        Delegates to :meth:`run` via a thread-pool executor so the event loop
+        is not blocked. The ``ContextVar`` correlation context is automatically
+        copied to the executor thread by the event loop.
+
+        Args:
+            task: The task to execute.
+            plan: The plan containing steps to execute.
+
+        Returns:
+            A :class:`RunResult` summarising the execution.
+        """
+        fn = functools.partial(self.run, task, plan)
+        return await asyncio.get_running_loop().run_in_executor(None, fn)
+
     def _execute_steps(self, plan: Plan, ctx: _RunContext, metrics_collector: MetricsCollector) -> None:
         """Run the dependency-driven scheduling loop until no progress is made."""
         by_id = {s.id: s for s in plan.steps}
@@ -203,6 +222,7 @@ class Runtime:
                     ctx.accumulated_cost, elapsed, ctx.total_retries
                 )
                 if not result.passed:
+                    assert result.violation is not None
                     ctx.guard_violation = result.violation
                     logger.info(
                         f"Guardrail violated ({result.violation.guard_type.value}): {result.violation.message}"

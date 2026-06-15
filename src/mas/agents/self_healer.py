@@ -2,9 +2,9 @@
 
 import logging
 
-from mas.agents.recovery.failures import FailureType, StepFailure
-from mas.agents.recovery.retry_policy import RetryPolicy, RetryConfig
 from mas.agents.recovery.escalation import EscalationOutcome, EscalationReason
+from mas.agents.recovery.failures import StepFailure
+from mas.agents.recovery.retry_policy import RetryConfig, RetryPolicy
 
 logger = logging.getLogger(__name__)
 

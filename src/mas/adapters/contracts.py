@@ -40,7 +40,7 @@ class EmailInput:
     timestamp: str = ""
     """Email sent timestamp (ISO 8601)."""
 
-    attachments: dict = field(default_factory=dict)
+    attachments: dict[str, Any] = field(default_factory=dict)
     """Email attachments (name -> content)."""
 
     def __post_init__(self) -> None:
@@ -103,7 +103,7 @@ class DocumentInput:
     source_url: str = ""
     """Source URL if applicable."""
 
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     """Additional document metadata."""
 
     def __post_init__(self) -> None:
@@ -126,7 +126,7 @@ class TranscriptInput:
     content: str
     """Transcript content (full text)."""
 
-    speaker_turns: list = field(default_factory=list)
+    speaker_turns: list[Any] = field(default_factory=list)
     """Speaker turns as list of (speaker, text) tuples."""
 
     duration_seconds: int = 0

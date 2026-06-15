@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from statistics import mean
+from typing import Any
 
 
 class EvaluationCriteria(Enum):
@@ -32,7 +33,7 @@ class Evaluation:
     feedback: str = ""
     passed: bool = False
     issues: list[str] = field(default_factory=list)
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate evaluation on creation."""

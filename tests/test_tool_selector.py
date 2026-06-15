@@ -4,9 +4,8 @@ import pytest
 
 from mas.agents.tool_selector import ToolSelector
 from mas.domain.plan import Plan, Step
-from mas.domain.task import Task
-from mas.tools.registry import ToolRegistry
 from mas.tools.contract import Tool, ToolSelection
+from mas.tools.registry import ToolRegistry
 
 
 def _search_handler(*args, **kwargs):
@@ -42,7 +41,6 @@ class TestToolSelector:
         registry = self._registry_with_tools()
         selector = ToolSelector(registry=registry)
 
-        task = Task(id="task-1", description="Find data", goal="Generate report")
         plan = Plan(
             id="plan-1",
             task_id="task-1",

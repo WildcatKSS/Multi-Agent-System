@@ -1,0 +1,244 @@
+"""Tests for the LLM contracts: messages, responses, provider ABC, and errors."""
+
+import asyncio
+import dataclasses
+from typing import Any, get_args
+
+import pytest
+
+from mas.llm.contracts import (
+    LLMMessage,
+    LLMProvider,
+    LLMResponse,
+    Role,
+)
+
+
+class TestLLMMessage:
+    """Tests for the LLMMessage frozen dataclass."""
+
+    def test_valid_creation(self) -> None:
+        """Can create a message with a valid role and content."""
+        msg = LLMMessage(role="user", content="hello")
+        assert msg.role == "user"
+        assert msg.content == "hello"
+        assert msg.metadata is None
+
+    def test_creation_with_metadata(self) -> None:
+        """Metadata is stored when provided."""
+        msg = LLMMessage(role="system", content="be helpful", metadata={"k": "v"})
+        assert msg.metadata == {"k": "v"}
+
+    @pytest.mark.parametrize("role", ["system", "user", "assistant"])
+    def test_all_valid_roles(self, role: str) -> None:
+        """Each documented role is accepted."""
+        msg = LLMMessage(role=role, content="x")  # type: ignore[arg-type]
+        assert msg.role == role
+
+    def test_invalid_role_rejected(self) -> None:
+        """An unknown role raises ValueError."""
+        with pytest.raises(ValueError, match="role must be one of"):
+            LLMMessage(role="robot", content="x")  # type: ignore[arg-type]
+
+    def test_empty_content_rejected(self) -> None:
+        """Empty content raises ValueError."""
+        with pytest.raises(ValueError, match="content cannot be empty"):
+            LLMMessage(role="user", content="")
+
+    @pytest.mark.parametrize("content", [" ", "\t", "\n", "  \n\t "])
+    def test_whitespace_only_content_rejected(self, content: str) -> None:
+        """Whitespace-only content raises ValueError."""
+        with pytest.raises(ValueError, match="content cannot be empty"):
+            LLMMessage(role="user", content=content)
+
+    def test_every_declared_role_is_accepted(self) -> None:
+        """Every role in the Role literal is accepted by validation (no drift).
+
+        Guards against the runtime role set falling out of sync with the Role
+        type: if validation dropped a declared role it would raise here.
+        """
+        for role in get_args(Role):
+            assert LLMMessage(role=role, content="x").role == role
+
+    def test_metadata_dict_makes_instance_unhashable(self) -> None:
+        """A message carrying a metadata dict is not hashable (documented caveat)."""
+        msg = LLMMessage(role="user", content="hi", metadata={"k": "v"})
+        with pytest.raises(TypeError):
+            hash(msg)
+
+    def test_is_frozen(self) -> None:
+        """Messages are immutable."""
+        msg = LLMMessage(role="user", content="hello")
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            msg.content = "changed"  # type: ignore[misc]
+
+    def test_frozen_role_assignment(self) -> None:
+        """Reassigning the role also fails on a frozen instance."""
+        msg = LLMMessage(role="user", content="hello")
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            msg.role = "assistant"  # type: ignore[misc]
+
+    def test_equality(self) -> None:
+        """Equal field values produce equal messages."""
+        a = LLMMessage(role="user", content="hi")
+        b = LLMMessage(role="user", content="hi")
+        assert a == b
+
+
+class TestLLMResponse:
+    """Tests for the LLMResponse frozen dataclass."""
+
+    def _assistant_msg(self) -> LLMMessage:
+        return LLMMessage(role="assistant", content="answer")
+
+    def test_valid_response(self) -> None:
+        """Can create a response with valid fields."""
+        resp = LLMResponse(
+            message=self._assistant_msg(),
+            tokens_used=42,
+            model="test-model",
+            latency_ms=12.5,
+        )
+        assert resp.tokens_used == 42
+        assert resp.model == "test-model"
+        assert resp.latency_ms == 12.5
+        assert resp.metadata is None
+
+    def test_response_with_metadata(self) -> None:
+        """Metadata is stored when provided."""
+        resp = LLMResponse(
+            message=self._assistant_msg(),
+            tokens_used=1,
+            model="m",
+            latency_ms=0.0,
+            metadata={"finish_reason": "stop"},
+        )
+        assert resp.metadata == {"finish_reason": "stop"}
+
+    def test_zero_tokens_and_latency_allowed(self) -> None:
+        """Zero is a valid boundary for tokens and latency."""
+        resp = LLMResponse(
+            message=self._assistant_msg(),
+            tokens_used=0,
+            model="m",
+            latency_ms=0.0,
+        )
+        assert resp.tokens_used == 0
+        assert resp.latency_ms == 0.0
+
+    def test_negative_tokens_rejected(self) -> None:
+        """Negative tokens_used raises ValueError."""
+        with pytest.raises(ValueError, match="tokens_used cannot be negative"):
+            LLMResponse(message=self._assistant_msg(), tokens_used=-1, model="m", latency_ms=0.0)
+
+    def test_negative_latency_rejected(self) -> None:
+        """Negative latency_ms raises ValueError."""
+        with pytest.raises(ValueError, match="latency_ms cannot be negative"):
+            LLMResponse(message=self._assistant_msg(), tokens_used=0, model="m", latency_ms=-0.1)
+
+    def test_nan_latency_rejected(self) -> None:
+        """NaN latency_ms raises ValueError (would otherwise slip past the >= 0 check)."""
+        with pytest.raises(ValueError, match="latency_ms must be finite"):
+            LLMResponse(
+                message=self._assistant_msg(),
+                tokens_used=0,
+                model="m",
+                latency_ms=float("nan"),
+            )
+
+    @pytest.mark.parametrize("latency", [float("inf"), float("-inf")])
+    def test_infinite_latency_rejected(self, latency: float) -> None:
+        """Infinite latency_ms raises ValueError."""
+        with pytest.raises(ValueError, match="latency_ms must be finite"):
+            LLMResponse(
+                message=self._assistant_msg(), tokens_used=0, model="m", latency_ms=latency
+            )
+
+    def test_empty_model_rejected(self) -> None:
+        """Empty model raises ValueError."""
+        with pytest.raises(ValueError, match="model cannot be empty"):
+            LLMResponse(message=self._assistant_msg(), tokens_used=0, model="", latency_ms=0.0)
+
+    def test_non_assistant_message_rejected(self) -> None:
+        """A response message must be authored by the assistant."""
+        with pytest.raises(ValueError, match="must have role 'assistant'"):
+            LLMResponse(
+                message=LLMMessage(role="user", content="x"),
+                tokens_used=0,
+                model="m",
+                latency_ms=0.0,
+            )
+
+    def test_is_frozen(self) -> None:
+        """Responses are immutable."""
+        resp = LLMResponse(message=self._assistant_msg(), tokens_used=1, model="m", latency_ms=1.0)
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            resp.tokens_used = 2  # type: ignore[misc]
+
+
+class _DummyProvider(LLMProvider):
+    """Minimal concrete provider used to test the ABC contract."""
+
+    @property
+    def name(self) -> str:
+        return "dummy"
+
+    @property
+    def default_model(self) -> str:
+        return "dummy-1"
+
+    @property
+    def supports_streaming(self) -> bool:
+        return False
+
+    async def call(self, messages: list[LLMMessage], model: str = "", **kwargs: Any) -> LLMResponse:
+        return LLMResponse(
+            message=LLMMessage(role="assistant", content="ok"),
+            tokens_used=1,
+            model=model or "dummy-1",
+            latency_ms=1.0,
+        )
+
+    def validate_config(self, config: Any) -> bool:
+        return True
+
+    def estimate_tokens(self, text: str) -> int:
+        return len(text)
+
+
+class TestLLMProvider:
+    """Tests for the LLMProvider abstract base class."""
+
+    def test_cannot_instantiate_abstract(self) -> None:
+        """The ABC itself cannot be instantiated."""
+        with pytest.raises(TypeError):
+            LLMProvider()  # type: ignore[abstract]
+
+    def test_incomplete_subclass_cannot_instantiate(self) -> None:
+        """A subclass missing abstract methods cannot be instantiated."""
+
+        class Incomplete(LLMProvider):
+            @property
+            def name(self) -> str:
+                return "x"
+
+        with pytest.raises(TypeError):
+            Incomplete()  # type: ignore[abstract]
+
+    def test_concrete_subclass_works(self) -> None:
+        """A fully implemented subclass instantiates and exposes properties."""
+        provider = _DummyProvider()
+        assert provider.name == "dummy"
+        assert provider.default_model == "dummy-1"
+        assert provider.supports_streaming is False
+        assert provider.estimate_tokens("abcd") == 4
+        assert provider.validate_config(None) is True
+
+    def test_call_returns_response(self) -> None:
+        """The async call method returns a well-formed response."""
+        provider = _DummyProvider()
+        resp = asyncio.run(provider.call([LLMMessage(role="user", content="hi")], "dummy-1"))
+        assert isinstance(resp, LLMResponse)
+        assert resp.message.role == "assistant"
+
+

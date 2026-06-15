@@ -3,7 +3,7 @@
 import json
 import logging
 import sys
-from typing import Any, Optional
+from typing import Any
 
 from mas.observability.correlation import get_correlation_id
 
@@ -74,7 +74,7 @@ class StructuredLogFormatter(logging.Formatter):
 def configure_logging(
     level: int = logging.INFO,
     format_json: bool = True,
-    stream: Optional[Any] = None,
+    stream: Any | None = None,
 ) -> None:
     """Configure structured logging for the application.
 
@@ -98,6 +98,7 @@ def configure_logging(
     console_handler.setLevel(level)
 
     # Set formatter
+    formatter: logging.Formatter
     if format_json:
         formatter = StructuredLogFormatter()
     else:

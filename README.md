@@ -1,28 +1,29 @@
 # Multi-Agent System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)](pyproject.toml)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![Release: 1.0.0](https://img.shields.io/badge/release-1.0.0-brightgreen?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System/releases/tag/v1.0.0)
+[![Release: 2.0.0 (Dev)](https://img.shields.io/badge/release-2.0.0%20dev-orange?style=flat-square)](https://github.com/WildcatKSS/Multi-Agent-System)
 
-A generic, autonomous multi-agent system that independently analyzes tasks, generates plans, selects tools, recovers from errors, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
+A deterministic, autonomous multi-agent runtime that analyzes tasks, executes dependency-ordered plans, enforces runtime guardrails, recovers from failures, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
-[Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Contributing](CONTRIBUTING.md) • [License](LICENSE)
+> ✅ **Status:** v1.x runtime stable. **Phase 1 (Provider Abstraction) and Phase 2 (Provider Implementations) are both complete** on `development` — all four providers (Ollama, HuggingFace, OpenAI, Anthropic), model validation, token counting, streaming, and error classification are shipped with 1200+ tests. Phase 3 (Prompt Templates) is next. See [docs/llm-roadmap.md](docs/llm-roadmap.md).
+
+[Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
 ## Quick Start
 
 ### Install
 
-```bash
-pip install mas
-```
+Install from source (the project is not published on PyPI):
 
-Or from source:
 ```bash
 git clone https://github.com/WildcatKSS/Multi-Agent-System.git
 cd Multi-Agent-System
-./install.sh
+./install.sh   # creates venv/ and installs with dev extras
 ```
+
+> Note: the PyPI name `mas` is taken by an unrelated package — do **not** `pip install mas`.
 
 ### Basic Usage
 
@@ -56,63 +57,87 @@ print(f"Success: {result.succeeded}")
 
 ## Features
 
-✅ **Production-Ready MVP**
+### ✅ Shipped (v1.x)
+
+**Runtime foundation**
 - Single-worker runtime orchestration with dependency resolution
-- 4 core agents: Planner, Tool Selection, Self-Healing, Evaluator
 - 4 input adapters: Email, Calendar, Document, Transcript
 - Runtime guardrails: Cost, TTL, Retries, Plan Depth
+- Working + Episodic memory layers (optional Redis backend)
 
-✅ **Reliability & Operations**
-- Memory layer with working memory and episodic store
+**Reliability & operations**
 - Structured observability: correlation IDs, JSON logging, metrics
-- Error recovery with retries and fallbacks
-- Thread-safe execution via contextvars
+- Error recovery with retries, escalation, and adaptive strategies
+- Deterministic, rules + heuristics based evaluation
 
-✅ **Quality & Testing**
-- 450 comprehensive tests (100% passing, ~0.5s execution)
-- Type-safe with full Python 3.12+ type hints
-- 0 security vulnerabilities
-- 10 Architecture Decision Records
+**Quality**
+- 1200+ tests passing (~30s), ~95% line/branch coverage
+- Typed throughout — `mypy --strict` clean, `ruff` clean
+- Zero runtime dependencies (Redis optional)
 
-✅ **Well-Documented**
-- API reference and architecture guides
-- Production readiness documentation
-- Performance tuning and benchmarks
-- E2E scenarios with 25 realistic examples
+### ✅ Phase 1 complete — LLM Provider Abstraction (`src/mas/llm/`)
+
+- **`contracts.py`** — `LLMMessage`, `LLMResponse`, `LLMProvider` ABC, `LLMError` hierarchy
+- **`errors.py`** — Full error taxonomy: `ConfigError`, `TimeoutError`, `APIError`, `ValidationError`, `RateLimitError`, `AuthenticationError` (transient vs permanent)
+- **`base.py`** — `BaseProvider`: timeout enforcement, exponential-backoff retry, structured logging with correlation IDs and cost metrics
+- **`config.py`** — `LLMConfig` + per-provider configs: `OllamaConfig`, `HuggingFaceConfig`, `OpenAIConfig`, `AnthropicConfig`
+- **`provider_registry.py`** — `ProviderRegistry` factory; `from_config()` dispatch; `default_registry`
+- **`runtime/orchestrator.py`** — `run_async()` for non-blocking LLM calls via thread-pool executor
+
+### ✅ Phase 2 complete — Provider Implementations (`src/mas/llm/providers/`, `src/mas/llm/validation/`)
+
+All four concrete providers, plus supporting infrastructure:
+
+- **`providers/ollama.py`** — Ollama local provider (no API key, streaming-capable)
+- **`providers/huggingface.py`** — HuggingFace Inference API
+- **`providers/openai.py`** — OpenAI Chat Completions API
+- **`providers/anthropic.py`** — Anthropic Messages API
+- **`validation/model_validator.py`** — `ModelValidator`: catalog of 25 known models across all 4 providers, parameter bounds checking, capability metadata
+- **`token_counter.py`** — `TokenCounter`: per-provider heuristic strategies (3.5–4.0 chars/token) with LRU caching
+- **`streaming.py`** — SSE parsing, per-chunk timeout, `StreamCollector`
+- **`error_classifier.py`** — `ErrorClassifier`: retry strategy (immediate/exponential/fixed-wait), `Retry-After` header support, user-facing messages
+- **1200+ tests** — 100% coverage of all LLM modules, `mypy --strict` clean
+
+### 🚧 Planned — v2.0.0 LLM roadmap (Phases 3–12)
+
+- **Phase 3**: Prompt template system (composable YAML templates per agent)
+- **Phase 4**: LLM-powered Planner / ToolSelector / Evaluator / SelfHealer
+- **Phase 7**: Cascade & fallback — Ollama → HuggingFace → OpenAI/Anthropic → deterministic
+- **Phase 10**: Semantic memory for pattern learning
+- See **[docs/llm-roadmap.md](docs/llm-roadmap.md)** for the full 12-phase plan.
 
 ## Installation Options
 
-**PyPI** (recommended):
+**From source** (recommended):
 ```bash
-pip install mas
+./install.sh
 ```
 
 **Docker**:
 ```bash
-docker build -t mas:1.0.0 .
-docker-compose up -d
+docker build -t mas:2.0.0 .
+REDIS_PASSWORD=your-secret docker-compose up -d
 ```
 
-**Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for advanced memory features)
+> Set `REDIS_PASSWORD` before starting — the compose file binds Redis to `127.0.0.1` only and requires authentication by default.
+
+**Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for the Redis-backed working memory)
 
 ## Documentation
 
-### Core
-- **[API Reference](src/mas/README.md)** — Complete module documentation
-- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and patterns
-- **[Architecture Decisions](docs/architecture-decisions.md)** — 10 ADRs explaining design choices
+### Getting Started
+- **[LLM Roadmap](docs/llm-roadmap.md)** — v2.0.0 12-phase LLM integration plan
+- **[Quick Start: GitHub Setup](.github/QUICK_START_GITHUB.md)** — Set up for team development
+
+### Core Architecture
+- **[Architecture Guide](docs/multi-agent-system-reference.md)** — System design and planned LLM layers
 
 ### Operational
-- **[Performance Tuning](docs/performance-tuning.md)** — Benchmarks and optimization strategies
-- **[E2E Scenarios](docs/e2e-scenarios.md)** — 25 realistic usage examples
-- **[Production Readiness](docs/production-readiness.md)** — Deployment and monitoring
-- **[Roadmap](docs/roadmap.md)** — Feature roadmap and milestones
+- **[Team Assignments](.github/TEAM_ASSIGNMENTS.md)** — Phase leads and role definitions
 
 ### Governance
-- **[Contributing](CONTRIBUTING.md)** — How to contribute
-- **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community standards
-- **[Changelog](CHANGELOG.md)** — Release history
-- **[Versioning](VERSIONING.md)** — SemVer 2.0.0 policy
+- **[Security Policy](SECURITY.md)** — Vulnerability reporting
+- **[License](LICENSE)** — MIT License
 
 ## Testing
 
@@ -121,27 +146,19 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 450 tests
-- Unit tests: 200+
-- Integration tests: 150+
-- E2E scenarios: 25+
-- Guardrail tests: 50+
-- Recovery tests: 25+
+**Coverage**: 1200+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
-**Results**: 100% pass rate, ~0.5s total execution, 0% flakiness
+**Results**: 100% pass rate, ~30s total execution, ~95% line/branch coverage.
 
-## Performance
+Quality gates (run locally or in CI):
+```bash
+ruff check src tests      # lint
+mypy                      # strict type check
+pytest --cov              # tests + coverage
+```
 
-| Plan Size | Time    |
-|-----------|---------|
-| 3 steps   | ~0.15ms |
-| 10 steps  | ~0.5ms  |
-| 25 steps  | ~2ms    |
-| 100 steps | ~8ms    |
-
-**Memory**: Base runtime ~50MB + episodic store (~10MB per 1000 records)
-
-See [Performance Tuning](docs/performance-tuning.md) for detailed benchmarks.
+CI runs these gates across a Python 3.12 + 3.13 matrix and enforces a minimum
+coverage threshold (`pytest --cov-fail-under=90`).
 
 ## Architecture
 
@@ -158,6 +175,9 @@ from mas.guardrails import GuardrailsEngine
 ```
 src/mas/
 ├── agents/           # Planner, Tool Selection, Evaluator, Self-Healer
+├── llm/              # Phases 1+2 complete: all 4 providers, validation, streaming, token counting
+│   ├── providers/    # OllamaProvider, OpenAIProvider, AnthropicProvider, HuggingFaceProvider
+│   └── validation/   # ModelValidator (25 known models, capability metadata)
 ├── runtime/          # Orchestrator + Executor Registry
 ├── guardrails/       # Cost, TTL, Retries, Depth enforcement
 ├── observability/    # Logging, Metrics, Correlation IDs
@@ -181,10 +201,8 @@ src/mas/
 
 ## Release Information
 
-**Version**: 1.0.0 | **Released**: 2026-06-03 | **Status**: Production Ready
-
-[Changelog](CHANGELOG.md) • [Contributing](CONTRIBUTING.md)
+**Version**: 2.0.0 (Development) | **Target Release**: 2026-12-31 | **Status**: v1.x runtime stable; LLM integration planned
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Released under the [MIT License](LICENSE).
