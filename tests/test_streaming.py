@@ -1,18 +1,19 @@
 """Tests for mas.llm.streaming."""
 
 import asyncio
+import dataclasses
 from collections.abc import AsyncGenerator
 from typing import Any
 
 import pytest
 
 from mas.llm.contracts import LLMMessage
-from mas.llm.errors import APIError, TimeoutError as ProviderTimeoutError
+from mas.llm.errors import APIError
+from mas.llm.errors import TimeoutError as ProviderTimeoutError
 from mas.llm.streaming import (
     StreamBuffer,
     StreamChunk,
     StreamCollector,
-    _StreamTransport,
     build_chat_payload,
     make_error_transport,
     make_sse_transport,
@@ -20,7 +21,6 @@ from mas.llm.streaming import (
     parse_sse_line,
     stream_with_timeout,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -61,7 +61,7 @@ class TestStreamChunk:
 
     def test_frozen(self) -> None:
         c = StreamChunk(token="hi")
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             c.token = "bye"  # type: ignore[misc]
 
 
