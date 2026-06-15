@@ -1,18 +1,19 @@
 """Tests for mas.llm.token_counter."""
 
+import dataclasses
+
 import pytest
 
 from mas.llm.contracts import LLMMessage
 from mas.llm.token_counter import (
+    _BUILTIN_STRATEGIES,
     DEFAULT_STRATEGY,
     HeuristicStrategy,
     OverheadStrategy,
-    TokenCountStrategy,
     TokenCounter,
-    _BUILTIN_STRATEGIES,
+    TokenCountStrategy,
     default_counter,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -75,7 +76,7 @@ class TestHeuristicStrategy:
 
     def test_frozen(self) -> None:
         s = HeuristicStrategy()
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             s.chars_per_token = 2.0  # type: ignore[misc]
 
 
@@ -109,7 +110,7 @@ class TestOverheadStrategy:
     def test_frozen(self) -> None:
         base = HeuristicStrategy()
         s = OverheadStrategy(base=base)
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             s.overhead_tokens = 5  # type: ignore[misc]
 
 
