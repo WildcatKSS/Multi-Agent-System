@@ -142,7 +142,7 @@ class OllamaProvider(BaseProvider):
 
     @property
     def default_model(self) -> str:
-        return self.config.model
+        return str(self.config.model)
 
     # ------------------------------------------------------------------ #
     # BaseProvider abstract method
