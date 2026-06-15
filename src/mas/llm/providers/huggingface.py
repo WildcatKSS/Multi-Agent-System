@@ -159,7 +159,6 @@ class HuggingFaceProvider(BaseProvider):
         *,
         _transport: _Transport | None = None,
     ) -> None:
-        self._injected_transport = _transport
         super().__init__(
             config,
             timeout_seconds=config.timeout_seconds,
@@ -184,7 +183,6 @@ class HuggingFaceProvider(BaseProvider):
 
     @property
     def default_model(self) -> str:
-        assert isinstance(self.config, HuggingFaceConfig)
         return self.config.model
 
     # ------------------------------------------------------------------ #
@@ -245,16 +243,20 @@ class HuggingFaceProvider(BaseProvider):
                 f"HuggingFace returned unexpected response format for model {model!r}",
                 transient=False,
             )
+        if not isinstance(data[0], dict):
+            raise APIError(
+                f"HuggingFace returned unexpected item type for model {model!r}: "
+                f"expected dict, got {type(data[0]).__name__}",
+                transient=False,
+            )
         raw_content: str = data[0].get("generated_text") or ""
         if not raw_content.strip():
             raise APIError(
                 f"HuggingFace returned empty content for model {model!r}",
                 transient=False,
             )
-        content = raw_content
-
         return LLMResponse(
-            message=LLMMessage(role="assistant", content=content),
+            message=LLMMessage(role="assistant", content=raw_content),
             tokens_used=0,
             model=model,
             latency_ms=latency_ms,

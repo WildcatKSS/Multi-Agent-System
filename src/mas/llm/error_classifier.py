@@ -85,16 +85,12 @@ class ClassificationResult:
             Seconds to wait.  ``0.0`` for :attr:`~RetryStrategy.NO_RETRY` and
             :attr:`~RetryStrategy.IMMEDIATE_RETRY`.
         """
-        if self.strategy == RetryStrategy.NO_RETRY:
-            return 0.0
-        if self.strategy == RetryStrategy.IMMEDIATE_RETRY:
-            return 0.0
         if self.strategy == RetryStrategy.EXPONENTIAL_BACKOFF:
             return float(min(2**attempt, max_backoff))
         if self.strategy == RetryStrategy.FIXED_WAIT:
             hint = self.error.retry_after_seconds
             return float(hint) if hint is not None else 0.0
-        return 0.0  # pragma: no cover — exhaustive enum
+        return 0.0
 
     def __repr__(self) -> str:
         return (
@@ -246,34 +242,38 @@ class ErrorClassifier:
             user_message="The request timed out. It will be retried automatically.",
         )
 
-    def _classify_api(self, error: APIError) -> ClassificationResult:
+    def _transient_or_permanent(
+        self,
+        error: LLMError,
+        transient_msg: str,
+        permanent_msg: str,
+    ) -> ClassificationResult:
         if error.transient:
             return ClassificationResult(
                 error=error,
                 is_retryable=True,
                 strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
-                user_message="A transient API error occurred. The request will be retried.",
+                user_message=transient_msg,
             )
         return ClassificationResult(
             error=error,
             is_retryable=False,
             strategy=RetryStrategy.NO_RETRY,
-            user_message=f"The API returned a permanent error: {error.message}",
+            user_message=permanent_msg,
+        )
+
+    def _classify_api(self, error: APIError) -> ClassificationResult:
+        return self._transient_or_permanent(
+            error,
+            transient_msg="A transient API error occurred. The request will be retried.",
+            permanent_msg=f"The API returned a permanent error: {error.message}",
         )
 
     def _classify_generic(self, error: LLMError) -> ClassificationResult:
-        if error.transient:
-            return ClassificationResult(
-                error=error,
-                is_retryable=True,
-                strategy=RetryStrategy.EXPONENTIAL_BACKOFF,
-                user_message="A transient error occurred. The request will be retried.",
-            )
-        return ClassificationResult(
-            error=error,
-            is_retryable=False,
-            strategy=RetryStrategy.NO_RETRY,
-            user_message=f"An error occurred: {error.message}",
+        return self._transient_or_permanent(
+            error,
+            transient_msg="A transient error occurred. The request will be retried.",
+            permanent_msg=f"An error occurred: {error.message}",
         )
 
 

@@ -13,6 +13,13 @@ from typing import Any
 
 from mas.llm.config import AnthropicConfig, HuggingFaceConfig, LLMConfig, OllamaConfig, OpenAIConfig
 
+_CONFIG_PROVIDER: dict[type[LLMConfig], str] = {
+    OllamaConfig: "ollama",
+    HuggingFaceConfig: "huggingface",
+    OpenAIConfig: "openai",
+    AnthropicConfig: "anthropic",
+}
+
 
 @dataclass(frozen=True)
 class ModelCapabilities:
@@ -239,15 +246,8 @@ class ModelValidator:
         Returns:
             :class:`ValidationResult` — passing if the model is in the catalog.
         """
-        if isinstance(config, OllamaConfig):
-            provider = "ollama"
-        elif isinstance(config, HuggingFaceConfig):
-            provider = "huggingface"
-        elif isinstance(config, OpenAIConfig):
-            provider = "openai"
-        elif isinstance(config, AnthropicConfig):
-            provider = "anthropic"
-        else:
+        provider = next((p for cls, p in _CONFIG_PROVIDER.items() if isinstance(config, cls)), None)
+        if provider is None:
             return ValidationResult.fail(f"unrecognised config type: {type(config).__name__!r}")
         return self.validate_model(config.model, provider)
 
@@ -295,27 +295,12 @@ def _build_default_validator() -> ModelValidator:
     )
     for name in ["gpt2", "distilgpt2"]:
         v.register(ModelInfo(name=name, provider="huggingface", capabilities=_hf_caps))
-    v.register(ModelInfo(
-        name="EleutherAI/gpt-j-6B", provider="huggingface",
-        capabilities=ModelCapabilities(
-            supports_system_messages=False, supports_streaming=False,
-            max_context_tokens=2048, max_output_tokens=1024,
-        ),
-    ))
-    v.register(ModelInfo(
-        name="bigscience/bloom", provider="huggingface",
-        capabilities=ModelCapabilities(
-            supports_system_messages=False, supports_streaming=False,
-            max_context_tokens=2048, max_output_tokens=1024,
-        ),
-    ))
-    v.register(ModelInfo(
-        name="facebook/opt-1.3b", provider="huggingface",
-        capabilities=ModelCapabilities(
-            supports_system_messages=False, supports_streaming=False,
-            max_context_tokens=2048, max_output_tokens=1024,
-        ),
-    ))
+    _hf_large_caps = ModelCapabilities(
+        supports_system_messages=False, supports_streaming=False,
+        max_context_tokens=2048, max_output_tokens=1024,
+    )
+    for name in ["EleutherAI/gpt-j-6B", "bigscience/bloom", "facebook/opt-1.3b"]:
+        v.register(ModelInfo(name=name, provider="huggingface", capabilities=_hf_large_caps))
 
     # --- OpenAI ---
     for name, ctx, out in [

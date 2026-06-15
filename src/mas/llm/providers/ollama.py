@@ -120,7 +120,6 @@ class OllamaProvider(BaseProvider):
         *,
         _transport: _Transport | None = None,
     ) -> None:
-        self._injected_transport = _transport
         super().__init__(
             config,
             timeout_seconds=config.timeout_seconds,
@@ -143,7 +142,6 @@ class OllamaProvider(BaseProvider):
 
     @property
     def default_model(self) -> str:
-        assert isinstance(self.config, OllamaConfig)
         return self.config.model
 
     # ------------------------------------------------------------------ #
@@ -212,15 +210,13 @@ class OllamaProvider(BaseProvider):
         if not raw_content.strip():
             raise APIError(
                 f"Ollama returned empty content for model {model!r}",
-                transient=False,
+                transient=True,
             )
-        content = raw_content
-
         tokens_used = (data.get("prompt_eval_count") or 0) + (data.get("eval_count") or 0)
         returned_model: str = data.get("model") or model
 
         return LLMResponse(
-            message=LLMMessage(role="assistant", content=content),
+            message=LLMMessage(role="assistant", content=raw_content),
             tokens_used=tokens_used,
             model=returned_model,
             latency_ms=latency_ms,

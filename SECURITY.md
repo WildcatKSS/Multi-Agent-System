@@ -48,7 +48,7 @@ All contributions are reviewed for:
 - Safe dependency usage
 
 ### Testing
-- 450 tests (94% coverage) including input-validation and guardrail tests
+- 1200+ tests (95% coverage) including input-validation and guardrail tests
 - Automated testing on all pull requests
 - Manual security review of critical paths
 
@@ -93,21 +93,32 @@ The Multi-Agent System is designed with the following assumptions:
 
 1. **Configuration Security**
    - Do not expose guardrails configuration in logs
-   - Store sensitive credentials outside the framework
+   - Store sensitive credentials outside the framework; use environment variables for API keys
 
-2. **Monitoring**
+2. **Docker deployment**
+   - Always set `REDIS_PASSWORD` before running `docker-compose up`. The compose file requires
+     a password (`--requirepass`) and binds Redis to `127.0.0.1` only — do not override the
+     port binding to `0.0.0.0` in production.
+   - Example: `REDIS_PASSWORD=<strong-password> docker-compose up -d`
+
+3. **Installer integrity**
+   - `install.sh` downloads the Ollama installer to a temporary file and prints its SHA-256
+     before executing. Verify the printed hash against the published checksum at
+     https://github.com/ollama/ollama/releases before trusting the install on sensitive hosts.
+
+4. **Monitoring**
    - Monitor execution metrics and logs
    - Set up alerts for guardrail violations
 
-3. **Updates**
+5. **Updates**
    - Keep Python 3.12+ updated
    - Subscribe to security advisories
    - Apply patch releases promptly
 
-4. **Deployment**
-   - Run in minimal containers
+6. **Deployment**
+   - Run in minimal containers as a non-root user (the supplied `Dockerfile` already does this)
    - Restrict network access
-   - Use environment variables for configuration
+   - Use environment variables for all credentials
 
 ## Known Limitations
 
@@ -128,4 +139,4 @@ If you discover a security incident:
 
 For questions about security, use [GitHub Security Advisories](https://github.com/WildcatKSS/Multi-Agent-System/security/advisories) or contact the maintainers via the project's GitHub page.
 
-**Last Updated**: 2026-06-06
+**Last Updated**: 2026-06-15

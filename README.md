@@ -7,7 +7,7 @@
 
 A deterministic, autonomous multi-agent runtime that analyzes tasks, executes dependency-ordered plans, enforces runtime guardrails, recovers from failures, and evaluates output. The architecture is intentionally generic and not tied to a specific use case.
 
-> ⚠️ **Status:** v1.x runtime is shipped and stable. LLM integration is the **v2.0.0 roadmap, in progress** — see [docs/llm-roadmap.md](docs/llm-roadmap.md). **Phase 1 (Provider Abstraction) is complete**: contracts, BaseProvider, LLMConfig, ProviderRegistry, error hierarchy, async support, observability hooks, and 200+ tests. There is **no functional LLM provider yet** — concrete implementations (Ollama, OpenAI, etc.) are Phase 2.
+> ✅ **Status:** v1.x runtime stable. **Phase 1 (Provider Abstraction) and Phase 2 (Provider Implementations) are both complete** on `development` — all four providers (Ollama, HuggingFace, OpenAI, Anthropic), model validation, token counting, streaming, and error classification are shipped with 1200+ tests. Phase 3 (Prompt Templates) is next. See [docs/llm-roadmap.md](docs/llm-roadmap.md).
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [License](LICENSE)
 
@@ -71,13 +71,11 @@ print(f"Success: {result.succeeded}")
 - Deterministic, rules + heuristics based evaluation
 
 **Quality**
-- 650+ tests passing (~1-2s), ~95% line/branch coverage
+- 1200+ tests passing (~30s), ~95% line/branch coverage
 - Typed throughout — `mypy --strict` clean, `ruff` clean
 - Zero runtime dependencies (Redis optional)
 
 ### ✅ Phase 1 complete — LLM Provider Abstraction (`src/mas/llm/`)
-
-Delivered in `development` (targeting v2.0.0):
 
 - **`contracts.py`** — `LLMMessage`, `LLMResponse`, `LLMProvider` ABC, `LLMError` hierarchy
 - **`errors.py`** — Full error taxonomy: `ConfigError`, `TimeoutError`, `APIError`, `ValidationError`, `RateLimitError`, `AuthenticationError` (transient vs permanent)
@@ -85,11 +83,23 @@ Delivered in `development` (targeting v2.0.0):
 - **`config.py`** — `LLMConfig` + per-provider configs: `OllamaConfig`, `HuggingFaceConfig`, `OpenAIConfig`, `AnthropicConfig`
 - **`provider_registry.py`** — `ProviderRegistry` factory; `from_config()` dispatch; `default_registry`
 - **`runtime/orchestrator.py`** — `run_async()` for non-blocking LLM calls via thread-pool executor
-- **200+ tests** — 100% coverage of `src/mas/llm/`, `mypy --strict` clean on all test files
 
-### 🚧 Planned — v2.0.0 LLM roadmap (Phases 2–12, not yet implemented)
+### ✅ Phase 2 complete — Provider Implementations (`src/mas/llm/providers/`, `src/mas/llm/validation/`)
 
-- **Phase 2**: Concrete providers — Ollama, HuggingFace, OpenAI, Anthropic
+All four concrete providers, plus supporting infrastructure:
+
+- **`providers/ollama.py`** — Ollama local provider (no API key, streaming-capable)
+- **`providers/huggingface.py`** — HuggingFace Inference API
+- **`providers/openai.py`** — OpenAI Chat Completions API
+- **`providers/anthropic.py`** — Anthropic Messages API
+- **`validation/model_validator.py`** — `ModelValidator`: catalog of 25 known models across all 4 providers, parameter bounds checking, capability metadata
+- **`token_counter.py`** — `TokenCounter`: per-provider heuristic strategies (3.5–4.0 chars/token) with LRU caching
+- **`streaming.py`** — SSE parsing, per-chunk timeout, `StreamCollector`
+- **`error_classifier.py`** — `ErrorClassifier`: retry strategy (immediate/exponential/fixed-wait), `Retry-After` header support, user-facing messages
+- **1200+ tests** — 100% coverage of all LLM modules, `mypy --strict` clean
+
+### 🚧 Planned — v2.0.0 LLM roadmap (Phases 3–12)
+
 - **Phase 3**: Prompt template system (composable YAML templates per agent)
 - **Phase 4**: LLM-powered Planner / ToolSelector / Evaluator / SelfHealer
 - **Phase 7**: Cascade & fallback — Ollama → HuggingFace → OpenAI/Anthropic → deterministic
@@ -106,8 +116,10 @@ Delivered in `development` (targeting v2.0.0):
 **Docker**:
 ```bash
 docker build -t mas:2.0.0 .
-docker-compose up -d
+REDIS_PASSWORD=your-secret docker-compose up -d
 ```
+
+> Set `REDIS_PASSWORD` before starting — the compose file binds Redis to `127.0.0.1` only and requires authentication by default.
 
 **Requirements**: Python 3.12+ | **Optional**: Redis 7+ (for the Redis-backed working memory)
 
@@ -134,9 +146,9 @@ source venv/bin/activate
 pytest -v
 ```
 
-**Coverage**: 650+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
+**Coverage**: 1200+ tests across unit, integration, E2E scenario, guardrail, and recovery suites.
 
-**Results**: 100% pass rate, ~1-2s total execution, ~95% line/branch coverage.
+**Results**: 100% pass rate, ~30s total execution, ~95% line/branch coverage.
 
 Quality gates (run locally or in CI):
 ```bash
@@ -163,7 +175,9 @@ from mas.guardrails import GuardrailsEngine
 ```
 src/mas/
 ├── agents/           # Planner, Tool Selection, Evaluator, Self-Healer
-├── llm/              # Phase 1 complete: contracts, BaseProvider, config, registry, errors — v2.0.0
+├── llm/              # Phases 1+2 complete: all 4 providers, validation, streaming, token counting
+│   ├── providers/    # OllamaProvider, OpenAIProvider, AnthropicProvider, HuggingFaceProvider
+│   └── validation/   # ModelValidator (25 known models, capability metadata)
 ├── runtime/          # Orchestrator + Executor Registry
 ├── guardrails/       # Cost, TTL, Retries, Depth enforcement
 ├── observability/    # Logging, Metrics, Correlation IDs

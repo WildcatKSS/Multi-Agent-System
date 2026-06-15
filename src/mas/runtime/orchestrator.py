@@ -205,9 +205,7 @@ class Runtime:
             A :class:`RunResult` summarising the execution.
         """
         fn = functools.partial(self.run, task, plan)
-        loop = asyncio.get_running_loop()
-        result: RunResult = await loop.run_in_executor(None, fn)
-        return result
+        return await asyncio.get_running_loop().run_in_executor(None, fn)
 
     def _execute_steps(self, plan: Plan, ctx: _RunContext, metrics_collector: MetricsCollector) -> None:
         """Run the dependency-driven scheduling loop until no progress is made."""

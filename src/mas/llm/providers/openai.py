@@ -133,7 +133,6 @@ class OpenAIProvider(BaseProvider):
         *,
         _transport: _Transport | None = None,
     ) -> None:
-        self._injected_transport = _transport
         super().__init__(
             config,
             timeout_seconds=config.timeout_seconds,
@@ -162,7 +161,6 @@ class OpenAIProvider(BaseProvider):
 
     @property
     def default_model(self) -> str:
-        assert isinstance(self.config, OpenAIConfig)
         return self.config.model
 
     # ------------------------------------------------------------------ #
@@ -212,8 +210,10 @@ class OpenAIProvider(BaseProvider):
                 f"OpenAI returned no choices for model {model!r}",
                 transient=False,
             )
-        raw_content: str = (choices[0].get("message") or {}).get("content") or ""
-        if not raw_content.strip():
+        msg = choices[0].get("message") or {}
+        raw_content: str = msg.get("content") or ""
+        has_tool_calls = bool(msg.get("tool_calls"))
+        if not raw_content.strip() and not has_tool_calls:
             raise APIError(
                 f"OpenAI returned empty content for model {model!r}",
                 transient=False,

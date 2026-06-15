@@ -94,7 +94,7 @@ class StreamBuffer:
     @property
     def text(self) -> str:
         """Concatenation of all non-final chunk tokens."""
-        return "".join(c.token for c in self._chunks if not c.is_final)
+        return "".join(c.token for c in self._chunks)
 
     @property
     def is_complete(self) -> bool:

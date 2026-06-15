@@ -13,6 +13,10 @@ services:
     environment:
       # Logging (read by the standard logging configuration).
       LOG_LEVEL: INFO
+      # Redis password — must match the value configured on the redis service.
+      # Pass it to WorkingMemoryConfig(password=os.environ["REDIS_PASSWORD"])
+      # in your application code to authenticate against the Redis instance.
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev-change-in-production}
       # NOTE: The variables below are NOT yet read by the application.
       # Guardrails are configured in code via GuardrailsConfig, and the Redis
       # backend is configured via WorkingMemoryConfig. They are listed here as a
@@ -43,16 +47,21 @@ services:
   redis:
     image: redis:7-alpine
     container_name: mas-redis
+    # Bind to loopback only — not exposed on external interfaces.
+    # Set REDIS_PASSWORD in your environment before running docker-compose.
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev-change-in-production}
     volumes:
       - redis-data:/data
     networks:
       - mas-network
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-dev-change-in-production}"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # $$REDIS_PASSWORD is expanded at container runtime from the env var above.
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping"]
       interval: 10s
       timeout: 5s
       retries: 3
