@@ -1,5 +1,7 @@
 """Tests for mas.llm.validation.model_validator."""
 
+import dataclasses
+
 import pytest
 
 from mas.llm.config import AnthropicConfig, HuggingFaceConfig, LLMConfig, OllamaConfig, OpenAIConfig
@@ -8,11 +10,10 @@ from mas.llm.validation.model_validator import (
     ModelInfo,
     ModelValidator,
     ValidationResult,
-    _ParameterBounds,
     _build_default_validator,
+    _ParameterBounds,
     default_validator,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -57,7 +58,7 @@ class TestModelCapabilities:
 
     def test_frozen(self) -> None:
         caps = ModelCapabilities()
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             caps.max_context_tokens = 1  # type: ignore[misc]
 
 
@@ -81,7 +82,7 @@ class TestModelInfo:
 
     def test_frozen(self) -> None:
         m = _make_model()
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             m.name = "other"  # type: ignore[misc]
 
 
@@ -108,7 +109,7 @@ class TestValidationResult:
 
     def test_frozen(self) -> None:
         r = ValidationResult.ok()
-        with pytest.raises(Exception):
+        with pytest.raises(dataclasses.FrozenInstanceError):
             r.valid = False  # type: ignore[misc]
 
 
