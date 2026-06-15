@@ -1,8 +1,8 @@
 # LLM Integration Roadmap: Fully Agentic Framework with Open Source Models
 
-**Version**: 1.0  
-**Date**: 2026-06-06  
-**Status**: Phase 1 (Provider Abstraction) complete — contracts, BaseProvider, LLMConfig, ProviderRegistry, error hierarchy, async support, observability hooks, and 200+ tests delivered. Phase 2 (LLM Provider Implementations) is next.  
+**Version**: 1.1  
+**Date**: 2026-06-15  
+**Status**: Phase 1 (Provider Abstraction) and Phase 2 (Provider Implementations) complete — all four providers, model validation, token counting, streaming, error classification, and 1200+ tests delivered. Phase 3 (Prompt Templates) is next.  
 **Target**: Transform deterministic MVP (v1.0.0) into fully agentic system with LLM integration
 
 ---
@@ -21,6 +21,7 @@ This roadmap transforms the framework into a **fully agentic system with open so
 
 ### Track 1: Core LLM Integration (Phases 1-10)
 12-21 weeks to fully agentic framework with all memory types
+✅ Phase 1 complete | ✅ Phase 2 complete | Phase 3 next
 
 ### Track 2: Product Layer (Phases 11-12)  
 7-9 weeks additional for GUI and commercialization (future)
@@ -54,26 +55,25 @@ This roadmap transforms the framework into a **fully agentic system with open so
 
 ---
 
-### Phase 2: LLM Provider Implementations (2-3 weeks)
+### ✅ Phase 2: LLM Provider Implementations — COMPLETE
+
 **Goal**: Support Ollama (primary) + HuggingFace + optional OpenAI/Anthropic
 
-**Deliverables**:
-- `src/mas/llm/providers/ollama.py` - Ollama provider (local, free)
-- `src/mas/llm/providers/huggingface.py` - HuggingFace Inference API
-- `src/mas/llm/providers/openai.py` - OpenAI (optional dependency)
-- `src/mas/llm/providers/anthropic.py` - Anthropic (optional dependency)
-- Comprehensive tests (mocked HTTP, error handling, token counting)
-
-**Key Features**:
-- Model validation (check model availability before use)
-- Token counting (accurate where available; estimate if not)
-- Streaming support for long-running agents
-- Proper error classification (transient vs permanent)
+**Deliverables** (all merged to `development`):
+- ✅ `src/mas/llm/providers/ollama.py` — Ollama provider (local, no API key, streaming-capable)
+- ✅ `src/mas/llm/providers/huggingface.py` — HuggingFace Inference API
+- ✅ `src/mas/llm/providers/openai.py` — OpenAI Chat Completions API
+- ✅ `src/mas/llm/providers/anthropic.py` — Anthropic Messages API
+- ✅ `src/mas/llm/validation/model_validator.py` — `ModelValidator`: catalog of 25 known models, parameter bounds (temperature, top_p, max_tokens, penalties), capability metadata
+- ✅ `src/mas/llm/token_counter.py` — `TokenCounter`: per-provider heuristic strategies with LRU caching (OpenAI/Anthropic at 3.5 chars/token, Ollama/HuggingFace at 4.0)
+- ✅ `src/mas/llm/streaming.py` — SSE parsing, per-chunk timeout enforcement, `StreamCollector`
+- ✅ `src/mas/llm/error_classifier.py` — `ErrorClassifier`: maps error types to retry strategies (NO_RETRY / IMMEDIATE / EXPONENTIAL_BACKOFF / FIXED_WAIT), `Retry-After` header support
+- ✅ Cross-provider integration tests — `tests/providers/test_provider_integration.py` + `tests/integration/test_provider_integration.py`
+- ✅ 1000+ new tests — 100% coverage, `mypy --strict` clean
 
 **GitHub**:
-- Milestone: "Phase 2: LLM Providers"
-- ~10 issues, ~5 PRs
-- Estimate: 80-120 hours
+- Issues: #60–#64 (5 issues, 5 PRs — Issues 06–10)
+- All merged to `development` branch
 
 ---
 
@@ -403,8 +403,8 @@ See `.github/QUICK_START_GITHUB.md` for setup instructions.
 
 ## Success Criteria
 
-- ✅ All 650+ existing tests pass (450 original + 200+ new LLM tests)
-- ✅ 200+ new LLM tests pass (Phase 1 target exceeded)
+- ✅ All 1200+ tests pass (450 original + 750+ new LLM tests across Phases 1+2)
+- ✅ 1000+ new LLM tests added (Phases 1+2 target exceeded)
 - ✅ Real Ollama integration test passes
 - ✅ Framework is fully agentic (all agents use LLM reasoning)
 - ✅ All memory types integrated (Working, Episodic, Semantic, Event Log)
@@ -417,15 +417,15 @@ See `.github/QUICK_START_GITHUB.md` for setup instructions.
 
 ## Next Steps
 
-1. **Phase 2 Kickoff** — LLM Provider Implementations
-   - Implement `OllamaProvider` (primary local provider, no API key required)
-   - Implement `HuggingFaceProvider`, `OpenAIProvider`, `AnthropicProvider`
-   - All extend `BaseProvider`; concrete `_invoke()` + HTTP client per provider
-   - Target: `Phase-02/` branch series
+1. **Phase 3 Kickoff** — Prompt Template System
+   - Composable YAML templates per agent type (Planner, ToolSelector, Evaluator, SelfHealer)
+   - `PromptTemplate` + `PromptRegistry` contracts
+   - Required-variable validation and JSON output validation
+   - Target: `Phase-03/` branch series
 
-2. **Merge `development` → `main`** (when Phase 2 starts)
-   - Phase 1 is complete and stable on `development`
-   - Merge to `main` to unblock Phase 2 as the new base
+2. **Merge `development` → `main`** (Phases 1+2 complete)
+   - Both phases are complete and stable on `development`
+   - Merge to `main` to establish v2.0.0-alpha baseline
 
 3. **Weekly Syncs**
    - Daily 15-min standups

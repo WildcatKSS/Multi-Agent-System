@@ -106,27 +106,21 @@ class OverheadStrategy(TokenCountStrategy):
 # Provider strategy factories
 # ---------------------------------------------------------------------------
 
-# OpenAI's cl100k_base tokeniser averages ≈ 3.5 chars/token for English text.
-_OPENAI_STRATEGY = HeuristicStrategy(chars_per_token=3.5)
+# OpenAI's cl100k_base and Anthropic's BPE tokenisers both average ≈ 3.5 chars/token.
+_DENSE_STRATEGY = HeuristicStrategy(chars_per_token=3.5)
 
-# Anthropic uses a similar BPE tokeniser; ≈ 3.5 chars/token is a good proxy.
-_ANTHROPIC_STRATEGY = HeuristicStrategy(chars_per_token=3.5)
-
-# Ollama models (LLaMA family) average ≈ 4 chars/token.
-_OLLAMA_STRATEGY = HeuristicStrategy(chars_per_token=4.0)
-
-# HuggingFace GPT-2 style tokenisers average ≈ 4 chars/token.
-_HUGGINGFACE_STRATEGY = HeuristicStrategy(chars_per_token=4.0)
+# Ollama (LLaMA family) and HuggingFace (GPT-2 style) average ≈ 4 chars/token.
+_SPARSE_STRATEGY = HeuristicStrategy(chars_per_token=4.0)
 
 #: Default strategy used when no provider-specific one is registered.
 DEFAULT_STRATEGY = HeuristicStrategy(chars_per_token=4.0)
 
 #: Built-in provider → strategy mapping.
 _BUILTIN_STRATEGIES: dict[str, TokenCountStrategy] = {
-    "openai": _OPENAI_STRATEGY,
-    "anthropic": _ANTHROPIC_STRATEGY,
-    "ollama": _OLLAMA_STRATEGY,
-    "huggingface": _HUGGINGFACE_STRATEGY,
+    "openai": _DENSE_STRATEGY,
+    "anthropic": _DENSE_STRATEGY,
+    "ollama": _SPARSE_STRATEGY,
+    "huggingface": _SPARSE_STRATEGY,
 }
 
 

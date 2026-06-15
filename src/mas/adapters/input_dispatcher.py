@@ -46,7 +46,7 @@ class InputDispatcher:
         Raises:
             ValueError: If input source is unknown.
         """
-        if input_source not in InputSource.__members__.values():
+        if not isinstance(input_source, InputSource):
             raise ValueError(f"Unknown input source: {input_source}")
 
         logger.debug(
@@ -74,5 +74,4 @@ class InputDispatcher:
                 raise ValueError(f"Expected TranscriptInput, got {type(input_data)}")
             return self.transcript_adapter.adapt(input_data, task_id)
 
-        else:
-            raise ValueError(f"Unknown input source: {input_source}")
+        raise ValueError(f"Unknown input source: {input_source}")

@@ -141,7 +141,6 @@ class AnthropicProvider(BaseProvider):
         *,
         _transport: _Transport | None = None,
     ) -> None:
-        self._injected_transport = _transport
         super().__init__(
             config,
             timeout_seconds=config.timeout_seconds,
@@ -170,8 +169,7 @@ class AnthropicProvider(BaseProvider):
 
     @property
     def default_model(self) -> str:
-        assert isinstance(self.config, AnthropicConfig)
-        return self.config.model
+        return str(self.config.model)
 
     # ------------------------------------------------------------------ #
     # BaseProvider abstract method
@@ -223,8 +221,11 @@ class AnthropicProvider(BaseProvider):
                 f"Anthropic returned no content blocks for model {model!r}",
                 transient=False,
             )
-        raw_content: str = content_blocks[0].get("text") or ""
-        if not raw_content.strip():
+        raw_content: str = next(
+            (b.get("text") or "" for b in content_blocks if b.get("type") == "text"), ""
+        )
+        has_tool_use = any(b.get("type") == "tool_use" for b in content_blocks)
+        if not raw_content.strip() and not has_tool_use:
             raise APIError(
                 f"Anthropic returned empty content for model {model!r}",
                 transient=False,

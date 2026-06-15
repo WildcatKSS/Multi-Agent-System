@@ -87,6 +87,18 @@ install_system_deps() {
 }
 
 # --- Step 2: Ollama ---
+
+# Portable SHA-256 helper (Linux: sha256sum; macOS: shasum -a 256).
+_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$1" | awk '{print $1}'
+    else
+        echo "(sha256 unavailable — verify manually)"
+    fi
+}
+
 install_ollama() {
     info "Checking for Ollama..."
 
@@ -102,12 +114,33 @@ install_ollama() {
     fi
 
     info "Installing Ollama via official installer..."
-    if ! curl -fsSL https://ollama.com/install.sh | sh; then
-        warn "Ollama installation failed."
+
+    # Download to a temp file before executing so the same bytes that are
+    # inspected are the bytes that run (eliminates TOCTOU / MITM risk of the
+    # curl-pipe-to-sh pattern).
+    local tmp_installer
+    tmp_installer="$(mktemp /tmp/ollama-install-XXXXXX.sh)"
+
+    if ! curl -fsSL https://ollama.com/install.sh -o "$tmp_installer"; then
+        warn "Ollama installation failed: could not download installer."
         warn "Install manually: https://ollama.com/download"
+        rm -f "$tmp_installer"
         return 0
     fi
 
+    local sha256
+    sha256="$(_sha256 "$tmp_installer")"
+    info "Ollama installer SHA-256: $sha256"
+    info "Compare against the published release checksum at: https://github.com/ollama/ollama/releases"
+
+    if ! sh "$tmp_installer"; then
+        warn "Ollama installation failed."
+        warn "Install manually: https://ollama.com/download"
+        rm -f "$tmp_installer"
+        return 0
+    fi
+
+    rm -f "$tmp_installer"
     info "Ollama installed: $(ollama --version 2>&1 | head -1)"
 }
 
